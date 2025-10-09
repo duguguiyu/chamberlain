@@ -1,0 +1,39 @@
+{
+  "name": "@chamberlain/protocol",
+  "version": "0.1.0",
+  "description": "Chamberlain protocol definitions and compatibility tests",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "docs"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "test:compat": "vitest run --config vitest.compat.config.ts",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "chamberlain",
+    "protocol",
+    "api",
+    "typescript"
+  ],
+  "author": "Chamberlain Team",
+  "license": "MIT",
+  "dependencies": {
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "axios": "^1.6.2",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  }
+}
+
+

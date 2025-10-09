@@ -1,0 +1,127 @@
+[
+  {
+    "id": "mysql_database_config:default",
+    "sceneId": "mysql_database_config",
+    "schemeVersion": 1,
+    "conditionList": [],
+    "config": {
+      "host": "localhost",
+      "port": 3306,
+      "database": "default_db",
+      "username": "root",
+      "password": "password123",
+      "charset": "utf8mb4",
+      "maxConnections": 100,
+      "timeout": 30,
+      "ssl": false
+    },
+    "createdAt": "2025-10-01T10:00:00Z",
+    "updatedAt": "2025-10-08T15:00:00Z"
+  },
+  {
+    "id": "mysql_database_config:environment:production",
+    "sceneId": "mysql_database_config",
+    "schemeVersion": 1,
+    "conditionList": [
+      { "key": "environment", "value": "production" }
+    ],
+    "config": {
+      "host": "prod-db.example.com",
+      "port": 3306,
+      "database": "production_db",
+      "username": "prod_user",
+      "password": "prod_secure_password",
+      "charset": "utf8mb4",
+      "maxConnections": 200,
+      "timeout": 60,
+      "ssl": true
+    },
+    "createdAt": "2025-10-01T11:00:00Z",
+    "updatedAt": "2025-10-08T14:00:00Z"
+  },
+  {
+    "id": "mysql_database_config:environment:development",
+    "sceneId": "mysql_database_config",
+    "schemeVersion": 1,
+    "conditionList": [
+      { "key": "environment", "value": "development" }
+    ],
+    "config": {
+      "host": "localhost",
+      "port": 3306,
+      "database": "dev_db",
+      "username": "dev_user",
+      "password": "dev123",
+      "charset": "utf8mb4",
+      "maxConnections": 50,
+      "timeout": 30,
+      "ssl": false
+    },
+    "createdAt": "2025-10-01T12:00:00Z",
+    "updatedAt": "2025-10-07T10:00:00Z"
+  },
+  {
+    "id": "redis_cache_config:default",
+    "sceneId": "redis_cache_config",
+    "schemeVersion": 1,
+    "conditionList": [],
+    "config": {
+      "host": "localhost",
+      "port": 6379,
+      "password": "",
+      "db": 0,
+      "maxRetries": 3
+    },
+    "createdAt": "2025-10-02T10:00:00Z",
+    "updatedAt": "2025-10-08T10:00:00Z"
+  },
+  {
+    "id": "redis_cache_config:environment:production",
+    "sceneId": "redis_cache_config",
+    "schemeVersion": 1,
+    "conditionList": [
+      { "key": "environment", "value": "production" }
+    ],
+    "config": {
+      "host": "prod-redis.example.com",
+      "port": 6379,
+      "password": "redis_prod_password",
+      "db": 0,
+      "maxRetries": 5
+    },
+    "createdAt": "2025-10-02T11:00:00Z",
+    "updatedAt": "2025-10-08T11:00:00Z"
+  },
+  {
+    "id": "app_feature_flags:default",
+    "sceneId": "app_feature_flags",
+    "schemeVersion": 1,
+    "conditionList": [],
+    "config": {
+      "enableNewUI": false,
+      "enableBetaFeatures": false,
+      "maxUploadSize": 10,
+      "debugMode": false
+    },
+    "createdAt": "2025-10-03T10:00:00Z",
+    "updatedAt": "2025-10-08T12:00:00Z"
+  },
+  {
+    "id": "app_feature_flags:environment:development",
+    "sceneId": "app_feature_flags",
+    "schemeVersion": 1,
+    "conditionList": [
+      { "key": "environment", "value": "development" }
+    ],
+    "config": {
+      "enableNewUI": true,
+      "enableBetaFeatures": true,
+      "maxUploadSize": 50,
+      "debugMode": true
+    },
+    "createdAt": "2025-10-03T11:00:00Z",
+    "updatedAt": "2025-10-08T13:00:00Z"
+  }
+]
+
+

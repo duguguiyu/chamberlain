@@ -1,0 +1,778 @@
+openapi: 3.0.3
+info:
+  title: Chamberlain Configuration API
+  description: |
+    Chamberlain 配置管理系统 REST API 规范
+    
+    本规范定义了配置管理系统的完整 API 接口，包括场景管理和配置管理两大模块。
+    
+    ## 核心概念
+    
+    - **场景 (Scene)**: 配置管理的基础单元，定义了配置的结构（通过 JSON Schema）和可用条件
+    - **配置 (Config)**: 基于场景创建的具体配置实例，包含实际的配置数据
+    - **条件 (Condition)**: 用于区分不同配置的维度，如环境、客户、地区等
+    
+  version: 0.1.0
+  contact:
+    name: Chamberlain Team
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080/api
+    description: 本地开发环境
+  - url: https://api.chamberlain.example.com/api
+    description: 生产环境
+
+tags:
+  - name: Capabilities
+    description: 服务能力相关接口
+  - name: Scenes
+    description: 场景管理相关接口
+  - name: Configs
+    description: 配置管理相关接口
+
+paths:
+  /capabilities:
+    get:
+      tags: [Capabilities]
+      summary: 获取服务能力
+      description: 返回当前服务支持的能力列表，前端组件根据此接口动态调整 UI
+      operationId: getCapabilities
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapabilitiesResponse'
+
+  /scenes:
+    get:
+      tags: [Scenes]
+      summary: 获取场景列表
+      description: 分页获取场景列表，支持搜索和排序（取决于服务能力）
+      operationId: listScenes
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/SearchQuery'
+        - $ref: '#/components/parameters/Sort'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SceneListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    post:
+      tags: [Scenes]
+      summary: 创建场景
+      description: 创建一个新的场景
+      operationId: createScene
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSceneRequest'
+      responses:
+        '201':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SceneResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /scenes/{id}:
+    get:
+      tags: [Scenes]
+      summary: 获取场景详情
+      operationId: getScene
+      parameters:
+        - $ref: '#/components/parameters/SceneId'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SceneResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Scenes]
+      summary: 更新场景
+      operationId: updateScene
+      parameters:
+        - $ref: '#/components/parameters/SceneId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSceneRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SceneResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Scenes]
+      summary: 删除场景
+      operationId: deleteScene
+      parameters:
+        - $ref: '#/components/parameters/SceneId'
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /scenes/{id}/schemes:validate:
+    post:
+      tags: [Scenes]
+      summary: 验证新版本 Scheme
+      description: 验证新 Scheme 与现有 Scheme 的兼容性
+      operationId: validateScheme
+      parameters:
+        - $ref: '#/components/parameters/SceneId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateSchemeRequest'
+      responses:
+        '200':
+          description: 验证结果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidateSchemeResponse'
+
+  /scenes/{id}/schemes:
+    post:
+      tags: [Scenes]
+      summary: 更新 Scheme
+      description: 为场景添加新版本的 Scheme
+      operationId: updateScheme
+      parameters:
+        - $ref: '#/components/parameters/SceneId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSchemeRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateSchemeResponse'
+
+  /scenes/{id}/schemes/{version}:
+    patch:
+      tags: [Scenes]
+      summary: 更新 Scheme 状态
+      description: 激活或停用指定版本的 Scheme
+      operationId: updateSchemeStatus
+      parameters:
+        - $ref: '#/components/parameters/SceneId'
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSchemeStatusRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /scenes/{id}/conditions:
+    post:
+      tags: [Scenes]
+      summary: 添加条件
+      description: 为场景添加新的条件类型
+      operationId: addCondition
+      parameters:
+        - $ref: '#/components/parameters/SceneId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddConditionRequest'
+      responses:
+        '200':
+          description: 添加成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SceneResponse'
+
+  /configs:
+    get:
+      tags: [Configs]
+      summary: 获取配置列表
+      description: 获取指定场景下的配置列表
+      operationId: listConfigs
+      parameters:
+        - name: sceneId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: schemeVersion
+          in: query
+          schema:
+            type: integer
+        - name: conditions
+          in: query
+          description: 条件筛选，格式：key1:value1,key2:value2
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Sort'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigListResponse'
+
+    post:
+      tags: [Configs]
+      summary: 创建配置
+      operationId: createConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateConfigRequest'
+      responses:
+        '201':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigResponse'
+
+  /configs/{id}:
+    get:
+      tags: [Configs]
+      summary: 获取配置详情
+      operationId: getConfig
+      parameters:
+        - $ref: '#/components/parameters/ConfigId'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigResponse'
+
+    put:
+      tags: [Configs]
+      summary: 更新配置
+      operationId: updateConfig
+      parameters:
+        - $ref: '#/components/parameters/ConfigId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateConfigRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigResponse'
+
+    delete:
+      tags: [Configs]
+      summary: 删除配置
+      operationId: deleteConfig
+      parameters:
+        - $ref: '#/components/parameters/ConfigId'
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /configs/{id}:copy:
+    post:
+      tags: [Configs]
+      summary: 复制配置
+      description: 将配置复制到新的条件组合
+      operationId: copyConfig
+      parameters:
+        - $ref: '#/components/parameters/ConfigId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CopyConfigRequest'
+      responses:
+        '201':
+          description: 复制成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigResponse'
+
+components:
+  parameters:
+    Page:
+      name: page
+      in: query
+      description: 页码（从 1 开始）
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+
+    PageSize:
+      name: pageSize
+      in: query
+      description: 每页大小
+      schema:
+        type: integer
+        default: 10
+        minimum: 1
+        maximum: 100
+
+    SearchQuery:
+      name: q
+      in: query
+      description: 搜索关键字（需要服务支持搜索能力）
+      schema:
+        type: string
+
+    Sort:
+      name: sort
+      in: query
+      description: 排序规则，格式：field:order,field:order（如：createdAt:desc,name:asc）
+      schema:
+        type: string
+
+    SceneId:
+      name: id
+      in: path
+      required: true
+      description: 场景 ID
+      schema:
+        type: string
+        pattern: '^[a-z][a-z0-9_]*$'
+
+    ConfigId:
+      name: id
+      in: path
+      required: true
+      description: 配置 ID
+      schema:
+        type: string
+
+  schemas:
+    Condition:
+      type: object
+      required: [key, value]
+      properties:
+        key:
+          type: string
+          pattern: '^[a-z][a-z0-9_]*$'
+          description: 条件 key
+        value:
+          type: string
+          description: 条件值描述
+
+    SchemeVersion:
+      type: object
+      required: [scheme, version, status]
+      properties:
+        scheme:
+          type: object
+          description: JSON Schema 定义
+        version:
+          type: integer
+          minimum: 1
+          description: 版本号
+        status:
+          type: string
+          enum: [active, inactive]
+          description: 状态
+
+    Scene:
+      type: object
+      required: [id, name, schemeList, conditionList, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          pattern: '^[a-z][a-z0-9_]*$'
+        name:
+          type: string
+        schemeList:
+          type: array
+          items:
+            $ref: '#/components/schemas/SchemeVersion'
+        conditionList:
+          type: array
+          items:
+            $ref: '#/components/schemas/Condition'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Config:
+      type: object
+      required: [id, sceneId, schemeVersion, conditionList, config, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        sceneId:
+          type: string
+        schemeVersion:
+          type: integer
+        conditionList:
+          type: array
+          items:
+            $ref: '#/components/schemas/Condition'
+        config:
+          type: object
+          description: 配置内容
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Capabilities:
+      type: object
+      properties:
+        scenes.search:
+          type: boolean
+        scenes.sort:
+          type: boolean
+        configs.search:
+          type: boolean
+        configs.sort:
+          type: boolean
+        configs.filter:
+          type: boolean
+
+    CreateSceneRequest:
+      type: object
+      required: [id, name, scheme]
+      properties:
+        id:
+          type: string
+          pattern: '^[a-z][a-z0-9_]*$'
+        name:
+          type: string
+        scheme:
+          type: object
+          description: JSON Schema
+        conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Condition'
+
+    UpdateSceneRequest:
+      type: object
+      properties:
+        name:
+          type: string
+
+    ValidateSchemeRequest:
+      type: object
+      required: [scheme]
+      properties:
+        scheme:
+          type: object
+
+    ValidateSchemeResponse:
+      type: object
+      required: [valid, warnings]
+      properties:
+        valid:
+          type: boolean
+        warnings:
+          type: array
+          items:
+            type: string
+
+    UpdateSchemeRequest:
+      type: object
+      required: [scheme]
+      properties:
+        scheme:
+          type: object
+        overwrite:
+          type: boolean
+          default: false
+
+    UpdateSchemeResponse:
+      type: object
+      required: [version]
+      properties:
+        version:
+          type: integer
+
+    UpdateSchemeStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [active, inactive]
+
+    AddConditionRequest:
+      type: object
+      required: [key, value]
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+
+    CreateConfigRequest:
+      type: object
+      required: [sceneId, schemeVersion, conditions, config]
+      properties:
+        sceneId:
+          type: string
+        schemeVersion:
+          type: integer
+        conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Condition'
+        config:
+          type: object
+
+    UpdateConfigRequest:
+      type: object
+      required: [config]
+      properties:
+        schemeVersion:
+          type: integer
+        conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Condition'
+        config:
+          type: object
+
+    CopyConfigRequest:
+      type: object
+      required: [toConditions]
+      properties:
+        toConditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Condition'
+
+    PageData:
+      type: object
+      properties:
+        list:
+          type: array
+          items: {}
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    ApiResponse:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+        data: {}
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+        requestId:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required: [success, code, message]
+      properties:
+        success:
+          type: boolean
+          example: false
+        code:
+          type: string
+          example: VALIDATION_ERROR
+        message:
+          type: string
+        details:
+          type: object
+        requestId:
+          type: string
+
+    SuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            success:
+              example: true
+
+    CapabilitiesResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Capabilities'
+
+    SceneResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Scene'
+
+    SceneListResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            data:
+              allOf:
+                - $ref: '#/components/schemas/PageData'
+                - type: object
+                  properties:
+                    list:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Scene'
+
+    ConfigResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Config'
+
+    ConfigListResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            data:
+              allOf:
+                - $ref: '#/components/schemas/PageData'
+                - type: object
+                  properties:
+                    list:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Config'
+
+  responses:
+    BadRequest:
+      description: 请求参数错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            code: INVALID_PARAMETER
+            message: 参数验证失败
+            requestId: "abc123"
+
+    NotFound:
+      description: 资源不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            code: NOT_FOUND
+            message: 资源不存在
+            requestId: "abc123"
+
+    Conflict:
+      description: 资源冲突
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            code: SCENE_EXISTS
+            message: 场景 ID 已存在
+            requestId: "abc123"
+
+    InternalError:
+      description: 服务器内部错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            code: UNKNOWN_ERROR
+            message: 服务器内部错误
+            requestId: "abc123"
+
+
