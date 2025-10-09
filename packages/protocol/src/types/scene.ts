@@ -33,6 +33,22 @@ export interface Condition {
 }
 
 /**
+ * 可用条件定义
+ */
+export interface AvailableCondition {
+  /** 条件 key */
+  key: string;
+  /** 条件名称 */
+  name: string;
+  /** 条件描述（可选） */
+  description?: string;
+  /** 值类型（可选） */
+  type?: string;
+  /** 可选值列表（可选） */
+  values?: string[];
+}
+
+/**
  * 场景
  */
 export interface Scene {
@@ -40,14 +56,28 @@ export interface Scene {
   id: string;
   /** 场景名称 (用于描述该场景，便于查找) */
   name: string;
+  /** 场景描述 */
+  description?: string;
+  /** 可用条件列表 */
+  availableConditions?: AvailableCondition[];
+  /** 当前 Schema 版本号 */
+  currentSchemeVersion?: number;
+  /** 当前 Schema 定义 */
+  currentScheme?: JSONSchema;
+  /** 条件冲突策略 */
+  conditionConflictStrategy?: 'PRIORITY' | 'MERGE' | 'ERROR';
   /** Scheme 版本列表 (支持多版本) */
-  schemeList: SchemeVersion[];
-  /** 条件列表 */
-  conditionList: Condition[];
+  schemeList?: SchemeVersion[];
+  /** 条件列表（旧版） */
+  conditionList?: Condition[];
   /** 创建时间 */
   createdAt: string;
   /** 更新时间 */
   updatedAt: string;
+  /** 创建者 */
+  createdBy?: string;
+  /** 更新者 */
+  updatedBy?: string;
 }
 
 /**
@@ -58,9 +88,13 @@ export interface CreateSceneRequest {
   id: string;
   /** 场景名称 */
   name: string;
+  /** 场景描述 */
+  description?: string;
   /** JSON Schema 定义 */
-  scheme: JSONSchema;
-  /** 条件列表 */
+  schema: JSONSchema;
+  /** 可用条件列表 */
+  availableConditions?: AvailableCondition[];
+  /** 条件列表（旧版，兼容） */
   conditions?: Condition[];
 }
 

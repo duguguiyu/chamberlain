@@ -18,11 +18,15 @@ export interface Config {
   /** 条件列表 (可为空，表示默认配置) */
   conditionList: Condition[];
   /** 具体配置内容 (符合对应 Scheme 的定义) */
-  config: Record<string, any>;
+  config: Record<string, any> | string;
   /** 创建时间 */
   createdAt: string;
   /** 更新时间 */
   updatedAt: string;
+  /** 创建者 */
+  createdBy?: string;
+  /** 更新者 */
+  updatedBy?: string;
 }
 
 /**
@@ -34,7 +38,9 @@ export interface CreateConfigRequest {
   /** Scheme 版本 */
   schemeVersion: number;
   /** 条件列表 */
-  conditions: Condition[];
+  conditionList?: Condition[];
+  /** 条件列表（兼容旧版） */
+  conditions?: Condition[];
   /** 配置内容 */
   config: Record<string, any>;
 }
