@@ -11,10 +11,8 @@ import {
   SceneForm,
   SceneDescriptions,
 } from '@chamberlain/react-components';
-import type { Scene, CreateSceneRequest } from '@chamberlain/protocol';
+import type { Scene, CreateSceneRequest, UpdateSceneRequest } from '@chamberlain/protocol';
 import { useChamberlain } from '@chamberlain/react-components';
-
-const { TabPane } = Tabs;
 
 export default function ScenesPage() {
   const { client } = useChamberlain();
@@ -25,9 +23,9 @@ export default function ScenesPage() {
   const [tableKey, setTableKey] = useState(0); // 用于刷新表格
 
   // 创建场景
-  const handleCreate = async (values: CreateSceneRequest) => {
+  const handleCreate = async (values: CreateSceneRequest | UpdateSceneRequest) => {
     try {
-      await client.createScene(values);
+      await client.createScene(values as CreateSceneRequest);
       message.success('场景创建成功');
       setCreateModalVisible(false);
       setTableKey((prev) => prev + 1); // 刷新表格
@@ -152,18 +150,29 @@ export default function ScenesPage() {
         destroyOnClose
       >
         {currentScene && (
-          <Tabs defaultActiveKey="info">
-            <TabPane tab="基本信息" key="info">
-              <SceneDescriptions scene={currentScene} showSchema={false} />
-            </TabPane>
-            <TabPane tab="JSON Schema" key="schema">
-              <SceneDescriptions
-                scene={currentScene}
-                showSchema
-                column={1}
-              />
-            </TabPane>
-          </Tabs>
+          <Tabs
+            defaultActiveKey="info"
+            items={[
+              {
+                key: 'info',
+                label: '基本信息',
+                children: (
+                  <SceneDescriptions scene={currentScene} showSchema={false} />
+                ),
+              },
+              {
+                key: 'schema',
+                label: 'JSON Schema',
+                children: (
+                  <SceneDescriptions
+                    scene={currentScene}
+                    showSchema
+                    column={1}
+                  />
+                ),
+              },
+            ]}
+          />
         )}
       </Modal>
     </PageContainer>

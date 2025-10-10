@@ -58,6 +58,7 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
       width: 200,
       copyable: true,
       ellipsis: true,
+      fixed: 'left',
     },
     {
       title: 'Schema 版本',
@@ -127,60 +128,58 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
   const actionColumn: ProColumns<Config> = {
     title: '操作',
     key: 'action',
+    valueType: 'option',
     width: 200,
     fixed: 'right',
-    render: (_, record) => (
-      <Space size="small">
-        {actions.onView && (
-          <Button
-            type="link"
-            size="small"
-            onClick={() => actions.onView?.(record)}
-          >
-            查看
-          </Button>
-        )}
-        {actions.onEdit && (
-          <Button
-            type="link"
-            size="small"
-            onClick={() => actions.onEdit?.(record)}
-          >
-            编辑
-          </Button>
-        )}
-        {actions.onCopy && (
-          <Button
-            type="link"
-            size="small"
-            onClick={() => actions.onCopy?.(record)}
-          >
-            复制
-          </Button>
-        )}
-        {actions.onDelete && (
-          <Popconfirm
-            title="确定要删除这个配置吗？"
-            onConfirm={async () => {
-              try {
-                setLoading(true);
-                await actions.onDelete?.(record);
-                message.success('删除成功');
-                actionRef.current?.reload();
-              } catch (error: any) {
-                message.error(error.message || '删除失败');
-              } finally {
-                setLoading(false);
-              }
-            }}
-          >
-            <Button type="link" size="small" danger>
-              删除
-            </Button>
-          </Popconfirm>
-        )}
-      </Space>
-    ),
+    render: (_, record) => [
+      actions.onView && (
+        <a
+          key="view"
+          onClick={() => actions.onView?.(record)}
+        >
+          查看
+        </a>
+      ),
+      actions.onEdit && (
+        <a
+          key="edit"
+          onClick={() => actions.onEdit?.(record)}
+        >
+          编辑
+        </a>
+      ),
+      actions.onCopy && (
+        <a
+          key="copy"
+          onClick={() => actions.onCopy?.(record)}
+        >
+          复制
+        </a>
+      ),
+      actions.onDelete && (
+        <Popconfirm
+          key="delete"
+          title="确定要删除这个配置吗？"
+          description="删除配置将无法恢复，请确认。"
+          onConfirm={async () => {
+            try {
+              setLoading(true);
+              await actions.onDelete?.(record);
+              message.success('删除成功');
+              actionRef.current?.reload();
+            } catch (error: any) {
+              message.error(error.message || '删除失败');
+            } finally {
+              setLoading(false);
+            }
+          }}
+        >
+          <a style={{ color: 'red' }}>
+            删除
+          </a>
+        </Popconfirm>
+      ),
+    ].filter(Boolean),
   };
 
   const finalColumns = [

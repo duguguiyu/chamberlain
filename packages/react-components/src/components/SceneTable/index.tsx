@@ -6,7 +6,7 @@
 import React, { useRef } from 'react';
 import { ProTable, type ProColumns, type ActionType } from '@ant-design/pro-components';
 import { Button, message, Tag, Popconfirm } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, SettingOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 import type { Scene } from '@chamberlain/protocol';
 import { useScenes, useCapabilities } from '../../hooks';
 
@@ -54,6 +54,7 @@ export const SceneTable: React.FC<SceneTableProps> = ({
       copyable: true,
       width: 200,
       ellipsis: true,
+      fixed: 'left',
     },
     {
       title: '名称',
@@ -124,13 +125,13 @@ export const SceneTable: React.FC<SceneTableProps> = ({
         key="edit"
         onClick={() => actions?.onEdit?.(record)}
       >
-        <EditOutlined /> 编辑
+        编辑
       </a>,
       <a
         key="configs"
         onClick={() => actions?.onViewConfigs?.(record)}
       >
-        <SettingOutlined /> 配置
+        配置
       </a>,
       <Popconfirm
         key="delete"
@@ -151,7 +152,7 @@ export const SceneTable: React.FC<SceneTableProps> = ({
         }}
       >
         <a style={{ color: 'red' }}>
-          <DeleteOutlined /> 删除
+          删除
         </a>
       </Popconfirm>,
     ],

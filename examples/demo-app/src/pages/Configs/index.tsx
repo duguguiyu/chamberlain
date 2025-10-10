@@ -15,7 +15,6 @@ import type { Config, CreateConfigRequest, Scene } from '@chamberlain/protocol';
 import { useChamberlain } from '@chamberlain/react-components';
 import { useSearchParams } from '@umijs/max';
 
-const { TabPane } = Tabs;
 const { Option } = Select;
 
 export default function ConfigsPage() {
@@ -255,23 +254,34 @@ export default function ConfigsPage() {
         destroyOnClose
       >
         {currentConfig && (
-          <Tabs defaultActiveKey="info">
-            <TabPane tab="基本信息" key="info">
-              <ConfigDescriptions
-                config={currentConfig}
-                schema={(selectedScene as any)?.currentScheme}
-                showRawConfig={false}
-              />
-            </TabPane>
-            <TabPane tab="配置数据" key="data">
-              <ConfigDescriptions
-                config={currentConfig}
-                schema={(selectedScene as any)?.currentScheme}
-                showRawConfig
-                column={1}
-              />
-            </TabPane>
-          </Tabs>
+          <Tabs
+            defaultActiveKey="info"
+            items={[
+              {
+                key: 'info',
+                label: '基本信息',
+                children: (
+                  <ConfigDescriptions
+                    config={currentConfig}
+                    schema={(selectedScene as any)?.currentScheme}
+                    showRawConfig={false}
+                  />
+                ),
+              },
+              {
+                key: 'data',
+                label: '配置数据',
+                children: (
+                  <ConfigDescriptions
+                    config={currentConfig}
+                    schema={(selectedScene as any)?.currentScheme}
+                    showRawConfig
+                    column={1}
+                  />
+                ),
+              },
+            ]}
+          />
         )}
       </Modal>
     </PageContainer>
