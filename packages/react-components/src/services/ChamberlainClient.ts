@@ -77,6 +77,16 @@ export class ChamberlainClient {
     return data.data!;
   }
 
+  // Alias for listScenes for compatibility
+  async getSceneList(params: SceneListParams = {}): Promise<ApiResponse<PageData<Scene>>> {
+    const pageData = await this.listScenes(params);
+    return {
+      success: true,
+      data: pageData,
+      message: 'Success',
+    };
+  }
+
   async getScene(id: string): Promise<Scene> {
     const { data } = await this.axios.get<ApiResponse<Scene>>(`/scenes/${id}`);
     return data.data!;
@@ -130,6 +140,16 @@ export class ChamberlainClient {
   async listConfigs(params: ConfigListParams): Promise<PageData<Config>> {
     const { data } = await this.axios.get<ApiResponse<PageData<Config>>>('/configs', { params });
     return data.data!;
+  }
+
+  // Alias for listConfigs for compatibility
+  async getConfigs(params: ConfigListParams): Promise<ApiResponse<PageData<Config>>> {
+    const pageData = await this.listConfigs(params);
+    return {
+      success: true,
+      data: pageData,
+      message: 'Success',
+    };
   }
 
   async getConfig(id: string): Promise<Config> {

@@ -67,7 +67,7 @@ export const SceneTable: React.FC<SceneTableProps> = ({
       key: 'schemeVersion',
       width: 120,
       render: (_, record) => {
-        const activeScheme = record.schemeList.find((s) => s.status === 'active');
+        const activeScheme = record.schemeList?.find((s) => s.status === 'active');
         return activeScheme ? (
           <Tag color="blue">v{activeScheme.version}</Tag>
         ) : (
@@ -79,13 +79,13 @@ export const SceneTable: React.FC<SceneTableProps> = ({
       title: '总版本数',
       key: 'schemeCount',
       width: 100,
-      render: (_, record) => record.schemeList.length,
+      render: (_, record) => record.schemeList?.length || 0,
     },
     {
       title: '条件数量',
       key: 'conditionCount',
       width: 100,
-      render: (_, record) => record.conditionList.length,
+      render: (_, record) => record.conditionList?.length || 0,
     },
     {
       title: '更新时间',

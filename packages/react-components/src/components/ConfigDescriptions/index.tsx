@@ -66,7 +66,7 @@ export const ConfigDescriptions: React.FC<ConfigDescriptionsProps> = ({
         }
         return (
           <Space wrap>
-            {record.conditionList.map((condition, index) => (
+            {record.conditionList.map((condition: any, index: number) => (
               <Tag key={index} color="purple">
                 <strong>{condition.key}</strong> = {condition.value}
               </Tag>

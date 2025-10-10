@@ -3,7 +3,7 @@
  * 用于查看和管理配置
  */
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import { ProTable } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { Button, Tag, Space, Popconfirm, message } from 'antd';
@@ -46,7 +46,7 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
 }) => {
   const actionRef = useRef<ActionType>();
   const { client } = useChamberlain();
-  const { capabilities, hasCapability } = useCapabilities();
+  const { hasCapability } = useCapabilities();
   const [loading, setLoading] = useState(false);
 
   // 默认列配置
@@ -220,8 +220,8 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
           const response = await client.getConfigs(queryParams);
 
           return {
-            data: response.data.list || [],
-            total: response.data.total || 0,
+            data: response.data?.list || [],
+            total: response.data?.total || 0,
             success: true,
           };
         } catch (error: any) {

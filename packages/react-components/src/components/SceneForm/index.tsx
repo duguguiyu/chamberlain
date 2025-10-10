@@ -196,11 +196,11 @@ export const SceneForm: React.FC<SceneFormProps> = ({
           fieldProps={{
             rows: 2,
           }}
-          transform={(value) => {
+          transform={(value: any) => {
             if (!value) return [];
             return value.split('\n').filter((v: string) => v.trim());
           }}
-          convertValue={(value) => {
+          convertValue={(value: any) => {
             if (Array.isArray(value)) {
               return value.join('\n');
             }
@@ -224,7 +224,7 @@ export const SceneForm: React.FC<SceneFormProps> = ({
         rules={[
           { required: true, message: '请输入 JSON Schema' },
           {
-            validator: (_, value) => {
+            validator: (_: any, value: any) => {
               if (!value) return Promise.resolve();
               try {
                 JSON.parse(value);
