@@ -5,7 +5,7 @@
 
 import React, { useRef } from 'react';
 import { ProTable, type ProColumns, type ActionType } from '@ant-design/pro-components';
-import { Button, message, Tag, Popconfirm } from 'antd';
+import { Button, message, Tag, Popconfirm, Space } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import type { Scene } from '@chamberlain/protocol';
 import { useScenes, useCapabilities } from '../../hooks';
@@ -52,7 +52,7 @@ export const SceneTable: React.FC<SceneTableProps> = ({
       dataIndex: 'id',
       key: 'id',
       copyable: true,
-      width: 200,
+      width: 120,
       ellipsis: true,
       fixed: 'left',
     },
@@ -60,50 +60,47 @@ export const SceneTable: React.FC<SceneTableProps> = ({
       title: '名称',
       dataIndex: 'name',
       key: 'name',
-      width: 200,
       ellipsis: true,
+      // 不设置 width，让它自动分配剩余空间
     },
     {
-      title: 'Scheme 版本',
-      key: 'schemeVersion',
-      width: 120,
+      title: '可用条件',
+      key: 'availableConditions',
+      ellipsis: true,
+      // 不设置 width，让它自动分配剩余空间
       render: (_, record) => {
-        const activeScheme = record.schemeList?.find((s) => s.status === 'active');
-        return activeScheme ? (
-          <Tag color="blue">v{activeScheme.version}</Tag>
-        ) : (
-          <Tag>无激活版本</Tag>
+        if (!record.availableConditions || record.availableConditions.length === 0) {
+          return <span style={{ color: '#999' }}>无条件</span>;
+        }
+        return (
+          <Space wrap size={[4, 4]}>
+            {record.availableConditions.map((condition, index) => (
+              <Tag key={index} color="purple">
+                {condition.name || condition.key}
+              </Tag>
+            ))}
+          </Space>
         );
       },
-    },
-    {
-      title: '总版本数',
-      key: 'schemeCount',
-      width: 100,
-      render: (_, record) => record.schemeList?.length || 0,
-    },
-    {
-      title: '条件数量',
-      key: 'conditionCount',
-      width: 100,
-      render: (_, record) => record.conditionList?.length || 0,
-    },
-    {
-      title: '更新时间',
-      dataIndex: 'updatedAt',
-      key: 'updatedAt',
-      valueType: 'dateTime',
-      width: 180,
-      sorter: hasCapability('scenes.sort'),
+      hideInSearch: true,
     },
     {
       title: '创建时间',
       dataIndex: 'createdAt',
       key: 'createdAt',
       valueType: 'dateTime',
-      width: 180,
-      hideInTable: true,
+      width: 165,
       sorter: hasCapability('scenes.sort'),
+      hideInSearch: true,
+    },
+    {
+      title: '更新时间',
+      dataIndex: 'updatedAt',
+      key: 'updatedAt',
+      valueType: 'dateTime',
+      width: 165,
+      sorter: hasCapability('scenes.sort'),
+      hideInSearch: true,
     },
   ];
 
@@ -112,7 +109,7 @@ export const SceneTable: React.FC<SceneTableProps> = ({
     title: '操作',
     key: 'action',
     valueType: 'option',
-    width: 200,
+    width: 140,
     fixed: 'right',
     render: (_, record) => [
       <a
@@ -199,6 +196,7 @@ export const SceneTable: React.FC<SceneTableProps> = ({
         }
       }}
       rowKey="id"
+      scroll={{ x: 'max-content' }}
       pagination={{
         defaultPageSize: 10,
         showSizeChanger: true,

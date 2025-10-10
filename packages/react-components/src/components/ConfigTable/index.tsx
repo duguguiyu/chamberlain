@@ -55,24 +55,17 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
       title: '配置 ID',
       dataIndex: 'id',
       key: 'id',
-      width: 200,
+      width: 120,
       copyable: true,
       ellipsis: true,
       fixed: 'left',
     },
     {
-      title: 'Schema 版本',
-      dataIndex: 'schemeVersion',
-      key: 'schemeVersion',
-      width: 120,
-      render: (_, record) => <Tag color="blue">v{record.schemeVersion}</Tag>,
-      hideInSearch: true,
-    },
-    {
       title: '条件',
       dataIndex: 'conditionList',
       key: 'conditionList',
-      width: 250,
+      ellipsis: true,
+      // 不设置 width，让它自动分配剩余空间
       render: (_, record) => {
         if (!record.conditionList || record.conditionList.length === 0) {
           return <Tag color="default">默认配置</Tag>;
@@ -90,26 +83,11 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
       hideInSearch: !hasCapability('configs.filter'),
     },
     {
-      title: '配置数据预览',
-      dataIndex: 'config',
-      key: 'config',
-      ellipsis: true,
-      render: (_, record) => {
-        const configStr =
-          typeof record.config === 'string'
-            ? record.config
-            : JSON.stringify(record.config);
-        const preview = configStr.length > 100 ? configStr.substring(0, 100) + '...' : configStr;
-        return <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{preview}</span>;
-      },
-      hideInSearch: true,
-    },
-    {
       title: '创建时间',
       dataIndex: 'createdAt',
       key: 'createdAt',
       valueType: 'dateTime',
-      width: 180,
+      width: 165,
       hideInSearch: true,
       sorter: hasCapability('configs.sort'),
     },
@@ -118,7 +96,7 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
       dataIndex: 'updatedAt',
       key: 'updatedAt',
       valueType: 'dateTime',
-      width: 180,
+      width: 165,
       hideInSearch: true,
       sorter: hasCapability('configs.sort'),
     },
@@ -129,7 +107,7 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
     title: '操作',
     key: 'action',
     valueType: 'option',
-    width: 200,
+    width: 140,
     fixed: 'right',
     render: (_, record) => [
       actions.onView && (
@@ -233,6 +211,7 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
         }
       }}
       rowKey="id"
+      scroll={{ x: 'max-content' }}
       search={
         searchable && hasCapability('configs.search')
           ? {
