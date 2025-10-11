@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Card, Modal, message, Select, Space } from 'antd';
+import { Card, Drawer, message, Select, Space } from 'antd';
 import { PageContainer } from '@ant-design/pro-components';
 import {
   ConfigTable,
@@ -68,10 +68,12 @@ export default function ConfigsPage() {
     }
 
     try {
+      const { conditionList, ...configData } = values;
+      
       const createData: CreateConfigRequest = {
         sceneId: selectedSceneId,
-        conditionList: values.conditionList || [],
-        config: values,
+        conditionList: conditionList || [],
+        config: configData,
         schemeVersion: (selectedScene as any)?.currentSchemeVersion || 1,
       };
 
@@ -90,7 +92,9 @@ export default function ConfigsPage() {
     if (!currentConfig) return;
 
     try {
-      await client.updateConfig(currentConfig.id, values);
+      const { conditionList, ...configData } = values;
+      
+      await client.updateConfig(currentConfig.id, { config: configData });
       message.success('配置更新成功');
       setEditModalVisible(false);
       setCurrentConfig(undefined);
@@ -125,15 +129,11 @@ export default function ConfigsPage() {
     setEditModalVisible(true);
   };
 
-  // 复制配置
-  const handleCopy = async (config: Config) => {
-    try {
-      await client.copyConfig(config.id);
-      message.success('配置复制成功');
-      setTableKey((prev) => prev + 1);
-    } catch (error: any) {
-      message.error(error.message || '复制失败');
-    }
+  // 复制配置（前端实现：预填充到表单）
+  const handleCopy = (config: Config) => {
+    setCurrentConfig(config);
+    setCreateModalVisible(true);
+    message.info('配置已复制，请修改条件后保存');
   };
 
   // 解析配置数据
@@ -198,59 +198,69 @@ export default function ConfigsPage() {
         </Card>
       )}
 
-      {/* 创建配置弹窗 */}
-      <Modal
+      {/* 创建配置抽屉 */}
+      <Drawer
         title={`创建配置 - ${selectedScene?.name || ''}`}
         open={createModalVisible}
-        onCancel={() => setCreateModalVisible(false)}
-        footer={null}
-        width={800}
+        onClose={() => {
+          setCreateModalVisible(false);
+          setCurrentConfig(undefined);
+        }}
+        width={720}
         destroyOnClose
       >
         {(selectedScene as any)?.currentScheme && (
           <ConfigForm
             schema={(selectedScene as any).currentScheme}
+            scene={selectedScene}
+            initialValues={currentConfig ? getConfigData(currentConfig) : undefined}
+            initialConditions={currentConfig ? currentConfig.conditionList : undefined}
             onSubmit={handleCreate}
-            onCancel={() => setCreateModalVisible(false)}
+            onCancel={() => {
+              setCreateModalVisible(false);
+              setCurrentConfig(undefined);
+            }}
+            allowEditConditions={true}
           />
         )}
-      </Modal>
+      </Drawer>
 
-      {/* 编辑配置弹窗 */}
-      <Modal
+      {/* 编辑配置抽屉 */}
+      <Drawer
         title="编辑配置"
         open={editModalVisible}
-        onCancel={() => {
+        onClose={() => {
           setEditModalVisible(false);
           setCurrentConfig(undefined);
         }}
-        footer={null}
-        width={800}
+        width={720}
         destroyOnClose
       >
         {currentConfig && (selectedScene as any)?.currentScheme && (
           <ConfigForm
             schema={(selectedScene as any).currentScheme}
+            scene={selectedScene}
             initialValues={getConfigData(currentConfig)}
+            initialConditions={currentConfig.conditionList}
             onSubmit={handleEdit}
             onCancel={() => {
               setEditModalVisible(false);
               setCurrentConfig(undefined);
             }}
+            allowEditConditions={false}
           />
         )}
-      </Modal>
+      </Drawer>
 
-      {/* 查看配置详情弹窗 */}
-      <Modal
+      {/* 查看配置详情抽屉 */}
+      <Drawer
         title="配置详情"
         open={viewModalVisible}
-        onCancel={() => {
+        onClose={() => {
           setViewModalVisible(false);
           setCurrentConfig(undefined);
         }}
-        footer={null}
-        width={1000}
+        width={900}
         destroyOnClose
       >
         {currentConfig && (
@@ -258,10 +268,10 @@ export default function ConfigsPage() {
             config={currentConfig}
             schema={(selectedScene as any)?.currentScheme}
             showRawConfig
-            column={2}
+            column={1}
           />
         )}
-      </Modal>
+      </Drawer>
     </PageContainer>
   );
 }

@@ -4,37 +4,51 @@
  */
 
 import React, { useEffect } from 'react';
-import { ProForm, ProFormText, ProFormDigit, ProFormSwitch, ProFormSelect, ProFormTextArea } from '@ant-design/pro-components';
-import { message } from 'antd';
-import type { JSONSchema } from '@chamberlain/protocol';
+import { ProForm, ProFormText, ProFormDigit, ProFormSwitch, ProFormSelect, ProFormTextArea, ProFormList, ProFormDependency } from '@ant-design/pro-components';
+import { message, Card, Divider } from 'antd';
+import type { JSONSchema, Scene } from '@chamberlain/protocol';
 
 export interface ConfigFormProps {
   /** JSON Schema 定义 */
   schema: JSONSchema;
+  /** 场景信息（用于条件选择） */
+  scene?: Scene;
   /** 初始值（编辑模式） */
   initialValues?: Record<string, any>;
+  /** 初始条件列表 */
+  initialConditions?: Array<{ key: string; value: any }>;
   /** 提交回调 */
   onSubmit: (values: Record<string, any>) => Promise<void>;
   /** 取消回调 */
   onCancel?: () => void;
   /** 是否只读 */
   readonly?: boolean;
+  /** 是否允许编辑条件（创建模式=true，编辑模式=false） */
+  allowEditConditions?: boolean;
 }
 
 export const ConfigForm: React.FC<ConfigFormProps> = ({
   schema,
+  scene,
   initialValues,
+  initialConditions,
   onSubmit,
   onCancel,
   readonly = false,
+  allowEditConditions = true,
 }) => {
   const [form] = ProForm.useForm();
 
   useEffect(() => {
+    const formValues: any = {};
     if (initialValues) {
-      form.setFieldsValue(initialValues);
+      Object.assign(formValues, initialValues);
     }
-  }, [initialValues, form]);
+    if (initialConditions) {
+      formValues.conditionList = initialConditions;
+    }
+    form.setFieldsValue(formValues);
+  }, [initialValues, initialConditions, form]);
 
   /**
    * 根据 JSON Schema 字段定义渲染表单项
@@ -234,6 +248,150 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({
     );
   };
 
+  /**
+   * 渲染条件选择器
+   */
+  const renderConditions = () => {
+    if (!scene || !scene.availableConditions || scene.availableConditions.length === 0) {
+      return null;
+    }
+
+    if (!allowEditConditions) {
+      // 编辑模式：只读显示
+      return (
+        <Card 
+          size="small" 
+          title="配置条件"
+          style={{ marginBottom: 24, background: '#f5f5f5' }}
+        >
+          <div style={{ color: '#666', fontSize: 13 }}>
+            条件一旦创建后不可修改（因为条件是配置 ID 的一部分）
+          </div>
+          {initialConditions && initialConditions.length > 0 && (
+            <div style={{ marginTop: 12 }}>
+              {initialConditions.map((cond, index) => {
+                const conditionDef = scene.availableConditions?.find(c => c.key === cond.key);
+                return (
+                  <div key={index} style={{ padding: '8px 0', borderTop: index > 0 ? '1px solid #e8e8e8' : 'none' }}>
+                    <strong>{conditionDef?.name || cond.key}:</strong> {String(cond.value)}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
+      );
+    }
+
+    // 创建/复制模式：可编辑
+    return (
+      <>
+        <Divider orientation="left">配置条件</Divider>
+        <Card size="small" style={{ marginBottom: 24, background: '#f0f7ff' }}>
+          <div style={{ marginBottom: 16, color: '#666', fontSize: 13 }}>
+            配置条件用于区分不同环境、客户等场景。条件一旦创建后不可修改。
+          </div>
+          
+          <ProFormList
+            name="conditionList"
+            label=""
+            creatorButtonProps={{
+              creatorButtonText: '+ 添加条件',
+            }}
+            copyIconProps={false}
+            deleteIconProps={{
+              tooltipText: '删除此条件',
+            }}
+            itemRender={({ listDom, action }, { index }) => (
+              <Card
+                bordered
+                size="small"
+                style={{ marginBottom: 16 }}
+                title={`条件 ${index + 1}`}
+                extra={action}
+                bodyStyle={{ paddingTop: 16 }}
+              >
+                {listDom}
+              </Card>
+            )}
+          >
+            <ProFormSelect
+              name="key"
+              label="条件类型"
+              placeholder="选择条件"
+              options={scene.availableConditions.map((cond) => ({
+                label: cond.name,
+                value: cond.key,
+              }))}
+              rules={[{ required: true, message: '请选择条件类型' }]}
+              width="lg"
+            />
+            <ProFormDependency name={['key']}>
+              {({ key }) => {
+                const condition = scene.availableConditions?.find((c) => c.key === key);
+                if (!condition) return null;
+
+                // 如果有预定义值，使用下拉选择
+                if (condition.values && condition.values.length > 0) {
+                  return (
+                    <ProFormSelect
+                      name="value"
+                      label="条件值"
+                      placeholder="选择值"
+                      options={condition.values.map((v) => ({
+                        label: String(v),
+                        value: v,
+                      }))}
+                      rules={[{ required: true, message: '请选择条件值' }]}
+                      width="lg"
+                    />
+                  );
+                }
+
+                // 否则根据类型选择输入方式
+                switch (condition.type) {
+                  case 'number':
+                    return (
+                      <ProFormDigit
+                        name="value"
+                        label="条件值"
+                        placeholder="输入数值"
+                        rules={[{ required: true, message: '请输入条件值' }]}
+                        width="lg"
+                      />
+                    );
+                  case 'boolean':
+                    return (
+                      <ProFormSelect
+                        name="value"
+                        label="条件值"
+                        options={[
+                          { label: '是', value: true },
+                          { label: '否', value: false },
+                        ]}
+                        rules={[{ required: true, message: '请选择条件值' }]}
+                        width="lg"
+                      />
+                    );
+                  default:
+                    return (
+                      <ProFormText
+                        name="value"
+                        label="条件值"
+                        placeholder="输入条件值"
+                        rules={[{ required: true, message: '请输入条件值' }]}
+                        width="lg"
+                      />
+                    );
+                }
+              }}
+            </ProFormDependency>
+          </ProFormList>
+        </Card>
+      </>
+    );
+  };
+
   return (
     <ProForm
       form={form}
@@ -261,6 +419,8 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({
       }
       layout="vertical"
     >
+      {renderConditions()}
+      <Divider orientation="left">配置数据</Divider>
       {renderFields()}
     </ProForm>
   );

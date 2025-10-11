@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { Card, Modal, message } from 'antd';
+import { Card, Drawer, message } from 'antd';
 import { PageContainer } from '@ant-design/pro-components';
 import {
   SceneTable,
@@ -98,31 +98,29 @@ export default function ScenesPage() {
         />
       </Card>
 
-      {/* 创建场景弹窗 */}
-      <Modal
+      {/* 创建场景抽屉 */}
+      <Drawer
         title="创建场景"
         open={createModalVisible}
-        onCancel={() => setCreateModalVisible(false)}
-        footer={null}
-        width={800}
+        onClose={() => setCreateModalVisible(false)}
+        width={720}
         destroyOnClose
       >
         <SceneForm
           onSubmit={handleCreate}
           onCancel={() => setCreateModalVisible(false)}
         />
-      </Modal>
+      </Drawer>
 
-      {/* 编辑场景弹窗 */}
-      <Modal
+      {/* 编辑场景抽屉 */}
+      <Drawer
         title="编辑场景"
         open={editModalVisible}
-        onCancel={() => {
+        onClose={() => {
           setEditModalVisible(false);
           setCurrentScene(undefined);
         }}
-        footer={null}
-        width={800}
+        width={720}
         destroyOnClose
       >
         {currentScene && (
@@ -135,18 +133,17 @@ export default function ScenesPage() {
             }}
           />
         )}
-      </Modal>
+      </Drawer>
 
-      {/* 查看场景详情弹窗 */}
-      <Modal
+      {/* 查看场景详情抽屉 */}
+      <Drawer
         title="场景详情"
         open={viewModalVisible}
-        onCancel={() => {
+        onClose={() => {
           setViewModalVisible(false);
           setCurrentScene(undefined);
         }}
-        footer={null}
-        width={1000}
+        width={800}
         destroyOnClose
       >
         {currentScene && (
@@ -156,7 +153,7 @@ export default function ScenesPage() {
             column={1}
           />
         )}
-      </Modal>
+      </Drawer>
     </PageContainer>
   );
 }

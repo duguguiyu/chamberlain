@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>条件选择器调试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1890ff;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #1890ff;
+            padding-bottom: 10px;
+        }
+        pre {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        .success {
+            color: #52c41a;
+            font-weight: bold;
+        }
+        .error {
+            color: #f5222d;
+            font-weight: bold;
+        }
+        .warning {
+            color: #faad14;
+            font-weight: bold;
+        }
+        button {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #40a9ff;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .test-result.pass {
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+        }
+        .test-result.fail {
+            background: #fff2e8;
+            border: 1px solid #ffbb96;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Chamberlain 条件选择器调试</h1>
+    
+    <div class="section">
+        <h2>1. 检查 Mock API</h2>
+        <button onclick="checkMockAPI()">测试 API</button>
+        <div id="api-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>2. 检查场景数据结构</h2>
+        <button onclick="checkSceneStructure()">检查结构</button>
+        <div id="structure-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>3. 清单</h2>
+        <div id="checklist">
+            <div class="test-result">
+                <input type="checkbox" id="check1" />
+                <label for="check1">✅ 服务器运行在 localhost:8000</label>
+            </div>
+            <div class="test-result">
+                <input type="checkbox" id="check2" />
+                <label for="check2">✅ 浏览器已清除缓存（Cmd+Shift+R / Ctrl+Shift+R）</label>
+            </div>
+            <div class="test-result">
+                <input type="checkbox" id="check3" />
+                <label for="check3">✅ Mock API 返回 availableConditions</label>
+            </div>
+            <div class="test-result">
+                <input type="checkbox" id="check4" />
+                <label for="check4">✅ 选择了场景（不是"请先选择一个场景"）</label>
+            </div>
+            <div class="test-result">
+                <input type="checkbox" id="check5" />
+                <label for="check5">✅ 点击"创建配置"按钮打开 Drawer</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>4. 预期结果</h2>
+        <p>在创建配置的 Drawer 中，应该看到：</p>
+        <pre>┌─────────────────────────────────┐
+│ ─── 配置条件 ───                 │
+│ ┌─── 卡片（蓝色背景）────────┐   │
+│ │ 配置条件用于区分不同环境... │   │
+│ │                              │   │
+│ │ <span class="success">[+ 添加条件]</span> 按钮            │   │
+│ └──────────────────────────────┘   │
+│                                 │
+│ ─── 配置数据 ───                 │
+│ [Schema 字段...]                │
+└─────────────────────────────────┘</pre>
+    </div>
+
+    <script>
+        async function checkMockAPI() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<p>⏳ 正在检查...</p>';
+            
+            try {
+                const response = await fetch('/api/scenes');
+                const data = await response.json();
+                
+                if (!data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="test-result fail">
+                            <p class="error">❌ API 返回失败</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const scenes = data.data.list || [];
+                const firstScene = scenes[0];
+                
+                let html = '<div class="test-result pass">';
+                html += `<p class="success">✅ API 正常，返回 ${scenes.length} 个场景</p>`;
+                
+                if (firstScene && firstScene.availableConditions) {
+                    html += `<p class="success">✅ 第一个场景包含 availableConditions (${firstScene.availableConditions.length} 个条件)</p>`;
+                    html += '<p><strong>示例场景：</strong></p>';
+                    html += `<pre>${JSON.stringify(firstScene, null, 2)}</pre>`;
+                } else {
+                    html += '<p class="error">❌ 场景数据中没有 availableConditions！</p>';
+                    html += '<p><strong>实际数据：</strong></p>';
+                    html += `<pre>${JSON.stringify(firstScene, null, 2)}</pre>`;
+                }
+                
+                html += '</div>';
+                resultDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="test-result fail">
+                        <p class="error">❌ 请求失败</p>
+                        <pre>${error.message}</pre>
+                        <p class="warning">⚠️ 请确保开发服务器运行在 localhost:8000</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function checkSceneStructure() {
+            const resultDiv = document.getElementById('structure-result');
+            
+            const requiredFields = [
+                { field: 'id', desc: '场景 ID' },
+                { field: 'name', desc: '场景名称' },
+                { field: 'availableConditions', desc: '可用条件列表' },
+                { field: 'currentScheme', desc: '当前 Schema' },
+            ];
+            
+            const conditionFields = [
+                { field: 'key', desc: '条件键' },
+                { field: 'name', desc: '条件名称' },
+                { field: 'type', desc: '值类型' },
+                { field: 'values', desc: '可选值（可选）' },
+            ];
+            
+            let html = '<h3>Scene 对象必需字段：</h3><ul>';
+            requiredFields.forEach(({ field, desc }) => {
+                html += `<li><code>${field}</code> - ${desc}</li>`;
+            });
+            html += '</ul>';
+            
+            html += '<h3>AvailableCondition 对象必需字段：</h3><ul>';
+            conditionFields.forEach(({ field, desc }) => {
+                html += `<li><code>${field}</code> - ${desc}</li>`;
+            });
+            html += '</ul>';
+            
+            html += '<h3>示例结构：</h3>';
+            html += '<pre>' + JSON.stringify({
+                id: 'mysql_database_config',
+                name: 'MySQL 数据库配置',
+                availableConditions: [
+                    {
+                        key: 'environment',
+                        name: '环境',
+                        type: 'string',
+                        values: ['dev', 'test', 'staging', 'prod']
+                    },
+                    {
+                        key: 'customer',
+                        name: '客户',
+                        type: 'string'
+                    }
+                ],
+                currentScheme: { /* ... */ }
+            }, null, 2) + '</pre>';
+            
+            resultDiv.innerHTML = html;
+        }
+        
+        // 页面加载时自动检查
+        window.onload = function() {
+            // 延迟执行，确保服务器已启动
+            setTimeout(() => {
+                checkMockAPI();
+            }, 500);
+        };
+    </script>
+</body>
+</html>
+
