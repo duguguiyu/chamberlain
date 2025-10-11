@@ -9,6 +9,7 @@ import { Button, message, Tag, Popconfirm, Space } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import type { Scene } from '@chamberlain/protocol';
 import { useScenes, useCapabilities } from '../../hooks';
+import { COLUMN_WIDTHS, createCommonColumns, TABLE_CONFIG } from '../../constants/tableConfig';
 
 export interface SceneTableProps {
   /** 自定义列配置 */
@@ -44,24 +45,17 @@ export const SceneTable: React.FC<SceneTableProps> = ({
   const actionRef = useRef<ActionType>();
   const { fetchScenes, deleteScene } = useScenes();
   const { hasCapability } = useCapabilities();
+  const commonColumns = createCommonColumns();
 
   // 默认列配置
   const defaultColumns: ProColumns<Scene>[] = [
     {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
-      copyable: true,
-      width: 120,
-      ellipsis: true,
-      fixed: 'left',
+      ...commonColumns.id('ID', COLUMN_WIDTHS.ID_SHORT),
     },
     {
-      title: '名称',
-      dataIndex: 'name',
-      key: 'name',
-      ellipsis: true,
+      ...commonColumns.name('名称'),
       // 不设置 width，让它自动分配剩余空间
+      width: undefined,
     },
     {
       title: '可用条件',
@@ -85,32 +79,18 @@ export const SceneTable: React.FC<SceneTableProps> = ({
       hideInSearch: true,
     },
     {
-      title: '创建时间',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      valueType: 'dateTime',
-      width: 165,
+      ...commonColumns.createdAt(),
       sorter: hasCapability('scenes.sort'),
-      hideInSearch: true,
     },
     {
-      title: '更新时间',
-      dataIndex: 'updatedAt',
-      key: 'updatedAt',
-      valueType: 'dateTime',
-      width: 165,
+      ...commonColumns.updatedAt(),
       sorter: hasCapability('scenes.sort'),
-      hideInSearch: true,
     },
   ];
 
-  // 操作列
+  // 操作列（4个操作：查看、编辑、配置、删除）
   const actionColumn: ProColumns<Scene> = {
-    title: '操作',
-    key: 'action',
-    valueType: 'option',
-    width: 140,
-    fixed: 'right',
+    ...commonColumns.actions(4, true), // 4个按钮，有图标
     render: (_, record) => [
       <a
         key="view"
@@ -196,16 +176,18 @@ export const SceneTable: React.FC<SceneTableProps> = ({
         }
       }}
       rowKey="id"
-      scroll={{ x: 'max-content' }}
+      scroll={TABLE_CONFIG.scroll}
       pagination={{
-        defaultPageSize: 10,
-        showSizeChanger: true,
-        showQuickJumper: true,
+        defaultPageSize: TABLE_CONFIG.pagination.defaultPageSize,
+        showSizeChanger: TABLE_CONFIG.pagination.showSizeChanger,
+        showQuickJumper: TABLE_CONFIG.pagination.showQuickJumper,
+        showTotal: TABLE_CONFIG.pagination.showTotal,
+        pageSizeOptions: TABLE_CONFIG.pagination.pageSizeOptions,
       }}
       search={
         searchable && hasCapability('scenes.search')
           ? {
-              labelWidth: 'auto',
+              labelWidth: 'auto' as const,
             }
           : false
       }

@@ -11,6 +11,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import type { Config } from '@chamberlain/protocol';
 import { useChamberlain } from '../../context/ChamberlainContext';
 import { useCapabilities } from '../../hooks/useCapabilities';
+import { COLUMN_WIDTHS, createCommonColumns, TABLE_CONFIG } from '../../constants/tableConfig';
 
 export interface ConfigTableProps {
   /** 场景 ID（必填，用于筛选配置） */
@@ -48,17 +49,12 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
   const { client } = useChamberlain();
   const { hasCapability } = useCapabilities();
   const [loading, setLoading] = useState(false);
+  const commonColumns = createCommonColumns();
 
   // 默认列配置
   const defaultColumns: ProColumns<Config>[] = [
     {
-      title: '配置 ID',
-      dataIndex: 'id',
-      key: 'id',
-      width: 120,
-      copyable: true,
-      ellipsis: true,
-      fixed: 'left',
+      ...commonColumns.id('配置 ID', COLUMN_WIDTHS.ID_SHORT),
     },
     {
       title: '条件',
@@ -83,32 +79,18 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
       hideInSearch: !hasCapability('configs.filter'),
     },
     {
-      title: '创建时间',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      valueType: 'dateTime',
-      width: 165,
-      hideInSearch: true,
+      ...commonColumns.createdAt(),
       sorter: hasCapability('configs.sort'),
     },
     {
-      title: '更新时间',
-      dataIndex: 'updatedAt',
-      key: 'updatedAt',
-      valueType: 'dateTime',
-      width: 165,
-      hideInSearch: true,
+      ...commonColumns.updatedAt(),
       sorter: hasCapability('configs.sort'),
     },
   ];
 
-  // 操作列
+  // 操作列（4个操作：查看、编辑、复制、删除）
   const actionColumn: ProColumns<Config> = {
-    title: '操作',
-    key: 'action',
-    valueType: 'option',
-    width: 140,
-    fixed: 'right',
+    ...commonColumns.actions(4, false),
     render: (_, record) => [
       actions.onView && (
         <a
@@ -211,18 +193,20 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
         }
       }}
       rowKey="id"
-      scroll={{ x: 'max-content' }}
+      scroll={TABLE_CONFIG.scroll}
       search={
         searchable && hasCapability('configs.search')
           ? {
-              labelWidth: 'auto',
+              labelWidth: 'auto' as const,
             }
           : false
       }
       pagination={{
-        pageSize: 10,
-        showSizeChanger: true,
-        showQuickJumper: true,
+        defaultPageSize: TABLE_CONFIG.pagination.defaultPageSize,
+        showSizeChanger: TABLE_CONFIG.pagination.showSizeChanger,
+        showQuickJumper: TABLE_CONFIG.pagination.showQuickJumper,
+        showTotal: TABLE_CONFIG.pagination.showTotal,
+        pageSizeOptions: TABLE_CONFIG.pagination.pageSizeOptions,
       }}
       dateFormatter="string"
       headerTitle="配置列表"
