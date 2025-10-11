@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { Card, Modal, Tabs, message } from 'antd';
+import { Card, Modal, message } from 'antd';
 import { PageContainer } from '@ant-design/pro-components';
 import {
   SceneTable,
@@ -150,28 +150,10 @@ export default function ScenesPage() {
         destroyOnClose
       >
         {currentScene && (
-          <Tabs
-            defaultActiveKey="info"
-            items={[
-              {
-                key: 'info',
-                label: '基本信息',
-                children: (
-                  <SceneDescriptions scene={currentScene} showSchema={false} />
-                ),
-              },
-              {
-                key: 'schema',
-                label: 'JSON Schema',
-                children: (
-                  <SceneDescriptions
-                    scene={currentScene}
-                    showSchema
-                    column={1}
-                  />
-                ),
-              },
-            ]}
+          <SceneDescriptions
+            scene={currentScene}
+            showSchema
+            column={1}
           />
         )}
       </Modal>

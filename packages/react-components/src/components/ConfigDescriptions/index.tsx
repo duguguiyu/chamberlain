@@ -5,11 +5,11 @@
 
 import React from 'react';
 import { ProDescriptions } from '@ant-design/pro-components';
-import { Tag, Space, Typography } from 'antd';
+import { Tag, Space, Typography, Card, Divider } from 'antd';
 import type { ProDescriptionsProps } from '@ant-design/pro-components';
 import type { Config, JSONSchema } from '@chamberlain/protocol';
 
-const { Paragraph } = Typography;
+const { Paragraph, Text } = Typography;
 
 export interface ConfigDescriptionsProps {
   /** 配置数据 */
@@ -34,20 +34,18 @@ export const ConfigDescriptions: React.FC<ConfigDescriptionsProps> = ({
   extra = [],
   column = 2,
 }) => {
-  // 基础信息列
-  const baseColumns: ProDescriptionsProps['columns'] = [
+  // 元数据（紧凑显示）
+  const metaColumns: ProDescriptionsProps['columns'] = [
     {
       title: '配置 ID',
       key: 'id',
       dataIndex: 'id',
       copyable: true,
-      span: 2,
     },
     {
       title: '场景 ID',
       key: 'sceneId',
       dataIndex: 'sceneId',
-      copyable: true,
     },
     {
       title: 'Schema 版本',
@@ -59,16 +57,15 @@ export const ConfigDescriptions: React.FC<ConfigDescriptionsProps> = ({
       title: '应用条件',
       key: 'conditionList',
       dataIndex: 'conditionList',
-      span: 2,
       render: (_, record) => {
         if (!record.conditionList || record.conditionList.length === 0) {
-          return <Tag color="default">默认配置（无条件）</Tag>;
+          return <Tag color="default">默认配置</Tag>;
         }
         return (
-          <Space wrap>
+          <Space wrap size="small">
             {record.conditionList.map((condition: any, index: number) => (
               <Tag key={index} color="purple">
-                <strong>{condition.key}</strong> = {condition.value}
+                <strong>{condition.key}</strong>={condition.value}
               </Tag>
             ))}
           </Space>
@@ -86,18 +83,6 @@ export const ConfigDescriptions: React.FC<ConfigDescriptionsProps> = ({
       key: 'updatedAt',
       dataIndex: 'updatedAt',
       valueType: 'dateTime',
-    },
-    {
-      title: '创建者',
-      key: 'createdBy',
-      dataIndex: 'createdBy',
-      render: (_, record) => record.createdBy || '-',
-    },
-    {
-      title: '更新者',
-      key: 'updatedBy',
-      dataIndex: 'updatedBy',
-      render: (_, record) => record.updatedBy || '-',
     },
   ];
 
@@ -181,50 +166,129 @@ export const ConfigDescriptions: React.FC<ConfigDescriptionsProps> = ({
     });
   }
 
-  // 原始配置 JSON
-  const rawConfigColumn: ProDescriptionsProps['columns'] = showRawConfig
-    ? [
-        {
-          title: '原始配置 JSON',
-          key: 'rawConfig',
-          span: 2,
-          render: () => (
-            <Paragraph
-              copyable
-              style={{
-                background: '#f5f5f5',
-                padding: 12,
-                borderRadius: 4,
-                fontFamily: 'monospace',
-                fontSize: 12,
-                maxHeight: 400,
-                overflow: 'auto',
-              }}
-            >
-              <pre style={{ margin: 0 }}>
-                {JSON.stringify(configData, null, 2)}
-              </pre>
-            </Paragraph>
-          ),
-        },
-      ]
-    : [];
-
-  const allColumns = [
-    ...baseColumns,
-    ...configColumns,
-    ...rawConfigColumn,
-    ...extra,
-  ];
-
   return (
-    <ProDescriptions
-      column={column}
-      dataSource={config}
-      columns={allColumns}
-      bordered
-      title="配置详情"
-    />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* 元数据区域 - 紧凑显示 */}
+      <Card
+        size="small"
+        title={
+          <Space>
+            <Text type="secondary" style={{ fontSize: 13, fontWeight: 'normal' }}>
+              📋 元数据
+            </Text>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              (辅助信息)
+            </Text>
+          </Space>
+        }
+        bodyStyle={{ 
+          padding: '12px 16px',
+          background: '#fafafa',
+        }}
+        style={{
+          borderColor: '#e8e8e8',
+        }}
+      >
+        <ProDescriptions
+          column={3}
+          size="small"
+          dataSource={config}
+          columns={metaColumns}
+          bordered={false}
+          colon={false}
+          labelStyle={{ color: '#666', fontSize: 13 }}
+          contentStyle={{ fontSize: 13 }}
+        />
+      </Card>
+
+      {/* 配置数据区域 - 突出显示 */}
+      <Card
+        title={
+          <Space>
+            <Text strong style={{ fontSize: 16, color: '#1890ff' }}>
+              ⚙️ 配置数据
+            </Text>
+            {schema && schema.title && (
+              <Tag color="blue">{schema.title}</Tag>
+            )}
+          </Space>
+        }
+        extra={
+          showRawConfig && (
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              基于 Schema v{config.schemeVersion} 解析
+            </Text>
+          )
+        }
+        style={{
+          borderColor: '#1890ff',
+          borderWidth: 2,
+        }}
+        headStyle={{
+          background: 'linear-gradient(to right, #f0f7ff, #ffffff)',
+        }}
+      >
+        {configColumns.length > 0 ? (
+          <ProDescriptions
+            column={column}
+            dataSource={config}
+            columns={configColumns}
+            bordered
+            labelStyle={{ fontWeight: 500, fontSize: 14 }}
+            contentStyle={{ fontSize: 14 }}
+          />
+        ) : (
+          <div style={{ padding: 24, textAlign: 'center', color: '#999' }}>
+            未提供 Schema 定义，无法解析配置字段
+          </div>
+        )}
+
+        {/* 原始 JSON（可选） */}
+        {showRawConfig && (
+          <>
+            <Divider style={{ margin: '16px 0' }} />
+            <div>
+              <Text
+                type="secondary"
+                style={{ fontSize: 13, marginBottom: 8, display: 'block' }}
+              >
+                原始 JSON 数据
+              </Text>
+              <Paragraph
+                copyable
+                style={{
+                  background: '#fafafa',
+                  border: '1px solid #e8e8e8',
+                  padding: 12,
+                  borderRadius: 4,
+                  fontFamily: 'Monaco, Consolas, monospace',
+                  fontSize: 12,
+                  maxHeight: 300,
+                  overflow: 'auto',
+                  margin: 0,
+                }}
+              >
+                <pre style={{ margin: 0, color: '#262626' }}>
+                  {JSON.stringify(configData, null, 2)}
+                </pre>
+              </Paragraph>
+            </div>
+          </>
+        )}
+      </Card>
+
+      {/* 额外内容 */}
+      {extra.length > 0 && (
+        <Card size="small">
+          <ProDescriptions
+            column={column}
+            dataSource={config}
+            columns={extra}
+            bordered
+          />
+        </Card>
+      )}
+    </div>
   );
 };
 

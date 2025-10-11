@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Card, Modal, Tabs, message, Select, Space } from 'antd';
+import { Card, Modal, message, Select, Space } from 'antd';
 import { PageContainer } from '@ant-design/pro-components';
 import {
   ConfigTable,
@@ -254,33 +254,11 @@ export default function ConfigsPage() {
         destroyOnClose
       >
         {currentConfig && (
-          <Tabs
-            defaultActiveKey="info"
-            items={[
-              {
-                key: 'info',
-                label: '基本信息',
-                children: (
-                  <ConfigDescriptions
-                    config={currentConfig}
-                    schema={(selectedScene as any)?.currentScheme}
-                    showRawConfig={false}
-                  />
-                ),
-              },
-              {
-                key: 'data',
-                label: '配置数据',
-                children: (
-                  <ConfigDescriptions
-                    config={currentConfig}
-                    schema={(selectedScene as any)?.currentScheme}
-                    showRawConfig
-                    column={1}
-                  />
-                ),
-              },
-            ]}
+          <ConfigDescriptions
+            config={currentConfig}
+            schema={(selectedScene as any)?.currentScheme}
+            showRawConfig
+            column={2}
           />
         )}
       </Modal>

@@ -11,7 +11,7 @@ import {
   ProFormList,
   ProFormSelect,
 } from '@ant-design/pro-components';
-import { message } from 'antd';
+import { message, Card } from 'antd';
 import type { Scene, CreateSceneRequest, UpdateSceneRequest } from '@chamberlain/protocol';
 
 export interface SceneFormProps {
@@ -147,18 +147,30 @@ export const SceneForm: React.FC<SceneFormProps> = ({
         name="availableConditions"
         label="可用条件"
         creatorButtonProps={{
-          creatorButtonText: '添加条件',
+          creatorButtonText: '+ 添加条件',
         }}
         copyIconProps={false}
         deleteIconProps={{
-          tooltipText: '删除',
+          tooltipText: '删除此条件',
         }}
         tooltip="定义该场景支持的条件类型，如环境、客户等"
+        itemRender={({ listDom, action }, { index }) => (
+          <Card
+            bordered
+            size="small"
+            style={{ marginBottom: 16 }}
+            title={`条件 ${index + 1}`}
+            extra={action}
+            bodyStyle={{ paddingTop: 16 }}
+          >
+            {listDom}
+          </Card>
+        )}
       >
         <ProFormText
           name="key"
           label="条件 Key"
-          placeholder="如：env, customer"
+          placeholder="如：environment, customer"
           rules={[
             { required: true, message: '请输入条件 Key' },
             {
@@ -166,7 +178,7 @@ export const SceneForm: React.FC<SceneFormProps> = ({
               message: '条件 Key 必须是有效的标识符',
             },
           ]}
-          width="md"
+          width="lg"
         />
 
         <ProFormText
@@ -174,7 +186,7 @@ export const SceneForm: React.FC<SceneFormProps> = ({
           label="条件名称"
           placeholder="如：环境、客户"
           rules={[{ required: true, message: '请输入条件名称' }]}
-          width="md"
+          width="lg"
         />
 
         <ProFormSelect
@@ -186,15 +198,16 @@ export const SceneForm: React.FC<SceneFormProps> = ({
             { label: '布尔值', value: 'boolean' },
           ]}
           placeholder="选择值类型"
-          width="sm"
+          width="lg"
+          rules={[{ required: true, message: '请选择值类型' }]}
         />
 
         <ProFormTextArea
           name="values"
-          label="可选值"
-          placeholder="输入可选值，每行一个（可选）"
+          label="可选值（可选）"
+          placeholder="输入可选值，每行一个&#10;例如：&#10;dev&#10;test&#10;staging&#10;prod"
           fieldProps={{
-            rows: 2,
+            rows: 3,
           }}
           transform={(value: any) => {
             if (!value) return [];

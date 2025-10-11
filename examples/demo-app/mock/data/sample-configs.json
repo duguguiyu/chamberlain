@@ -19,11 +19,11 @@
     "updatedAt": "2025-10-08T15:00:00Z"
   },
   {
-    "id": "mysql_database_config:environment:production",
+    "id": "mysql_database_config:environment:prod",
     "sceneId": "mysql_database_config",
     "schemeVersion": 1,
     "conditionList": [
-      { "key": "environment", "value": "production" }
+      { "key": "environment", "value": "prod" }
     ],
     "config": {
       "host": "prod-db.example.com",
@@ -40,11 +40,11 @@
     "updatedAt": "2025-10-08T14:00:00Z"
   },
   {
-    "id": "mysql_database_config:environment:development",
+    "id": "mysql_database_config:environment:dev",
     "sceneId": "mysql_database_config",
     "schemeVersion": 1,
     "conditionList": [
-      { "key": "environment", "value": "development" }
+      { "key": "environment", "value": "dev" }
     ],
     "config": {
       "host": "localhost",
@@ -76,11 +76,11 @@
     "updatedAt": "2025-10-08T10:00:00Z"
   },
   {
-    "id": "redis_cache_config:environment:production",
+    "id": "redis_cache_config:environment:prod",
     "sceneId": "redis_cache_config",
     "schemeVersion": 1,
     "conditionList": [
-      { "key": "environment", "value": "production" }
+      { "key": "environment", "value": "prod" }
     ],
     "config": {
       "host": "prod-redis.example.com",
@@ -107,11 +107,11 @@
     "updatedAt": "2025-10-08T12:00:00Z"
   },
   {
-    "id": "app_feature_flags:environment:development",
+    "id": "app_feature_flags:environment:dev",
     "sceneId": "app_feature_flags",
     "schemeVersion": 1,
     "conditionList": [
-      { "key": "environment", "value": "development" }
+      { "key": "environment", "value": "dev" }
     ],
     "config": {
       "enableNewUI": true,
