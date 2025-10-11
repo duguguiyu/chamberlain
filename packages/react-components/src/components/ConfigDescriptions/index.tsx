@@ -6,6 +6,7 @@
 import React from 'react';
 import { ProDescriptions } from '@ant-design/pro-components';
 import { Tag, Space, Typography, Card, Divider } from 'antd';
+import { InfoCircleOutlined, SettingOutlined } from '@ant-design/icons';
 import type { ProDescriptionsProps } from '@ant-design/pro-components';
 import type { Config, JSONSchema } from '@chamberlain/protocol';
 
@@ -173,8 +174,9 @@ export const ConfigDescriptions: React.FC<ConfigDescriptionsProps> = ({
         size="small"
         title={
           <Space>
+            <InfoCircleOutlined style={{ color: '#999' }} />
             <Text type="secondary" style={{ fontSize: 13, fontWeight: 'normal' }}>
-              📋 元数据
+              元数据
             </Text>
             <Text type="secondary" style={{ fontSize: 12 }}>
               (辅助信息)
@@ -205,8 +207,9 @@ export const ConfigDescriptions: React.FC<ConfigDescriptionsProps> = ({
       <Card
         title={
           <Space>
+            <SettingOutlined style={{ color: '#1890ff', fontSize: 18 }} />
             <Text strong style={{ fontSize: 16, color: '#1890ff' }}>
-              ⚙️ 配置数据
+              配置数据
             </Text>
             {schema && schema.title && (
               <Tag color="blue">{schema.title}</Tag>
