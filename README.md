@@ -134,11 +134,14 @@ chamberlain/
 
 ## 📚 文档
 
-- [快速开始](docs/getting-started.md)
-- [组件 API 文档](docs/component-api.md)
-- [协议规范](packages/protocol/docs/api-spec.md)
-- [部署指南](docs/deployment.md)
-- [开发指南](docs/development.md)
+- [快速开始](docs/getting-started.md) - 快速上手指南
+- [组件 API 文档](docs/component-api.md) - React 组件使用说明
+- [协议规范](packages/protocol/docs/api-spec.md) - API 协议定义
+- [后端设计](docs/backend-java-design.md) - Java 后端架构设计
+- [Demo App](docs/demo-app.md) - 前端示例应用指南
+- [Demo Backend](docs/demo-backend.md) - 后端示例服务指南
+- [部署指南](docs/deployment.md) - 生产环境部署
+- [开发指南](docs/development.md) - 参与项目开发
 
 ---
 

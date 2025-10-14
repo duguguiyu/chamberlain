@@ -1,6 +1,6 @@
 # @chamberlain/protocol
 
-Chamberlain 协议定义包，包含类型定义、验证器和兼容性测试。
+Chamberlain 协议定义包，提供前后端共享的 TypeScript 类型、JSON Schema 验证器和协议兼容性测试工具。
 
 ## 📦 安装
 

@@ -1,123 +1,71 @@
-# Chamberlain Backend Service
+# Chamberlain Demo Backend
 
-Chamberlain 配置管理系统后端服务 - Spring Boot 实现
+Chamberlain 配置管理系统后端服务 - Spring Boot 3.2 实现，展示了如何实现 Chamberlain 协议规范。
 
-## 技术栈
+## 🚀 快速开始
 
-- **Java**: 17 LTS
-- **Spring Boot**: 3.2.1
-- **MySQL**: 8.0+
-- **Redis**: 7.0+
-- **Flyway**: 数据库版本管理
-- **SpringDoc OpenAPI**: API 文档
-
-## 快速开始
-
-### 前置要求
-
-- JDK 17+
-- Maven 3.9+
-- MySQL 8.0+
-- Redis 7.0+
-
-### 数据库准备
+### 使用 H2 内存数据库（推荐开发环境）
 
 ```bash
-# 创建数据库
-mysql -u root -p
-CREATE DATABASE chamberlain_dev CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+cd examples/demo-backend
+mvn spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-### 启动服务
+### 使用 MySQL
 
 ```bash
-# 编译
-mvn clean package
+# 1. 创建数据库
+mysql -u root -p -e "CREATE DATABASE chamberlain_dev CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
-# 运行
-mvn spring-boot:run
-
-# 或者
-java -jar target/chamberlain-backend-0.1.0.jar
+# 2. 启动服务
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-### 访问
+### 访问服务
 
 - **API 文档**: http://localhost:8080/swagger-ui.html
-- **API JSON**: http://localhost:8080/api-docs
 - **健康检查**: http://localhost:8080/actuator/health
+- **H2 控制台**: http://localhost:8080/h2-console (仅 local 配置)
 
-## 开发
+## 🛠️ 技术栈
 
-### 项目结构
+- **Java 17** / **Spring Boot 3.2**
+- **MySQL 8.0+** / **H2 Database**
+- **Redis 7.0+** (可选)
+- **Flyway** - 数据库版本管理
+- **SpringDoc** - OpenAPI 文档
 
-```
-src/main/java/com/chamberlain/
-├── controller/          # REST API 控制器
-├── service/            # 业务逻辑服务
-├── repository/         # JPA 数据访问
-├── entity/             # JPA 实体
-├── dto/                # 数据传输对象
-├── config/             # Spring 配置
-├── exception/          # 异常处理
-├── util/               # 工具类
-└── ChamberlainApplication.java  # 启动类
-```
+## ✨ 功能特性
 
-### 配置文件
+- **场景管理** - 创建、查询、更新、删除场景
+- **配置管理** - 基于场景的配置 CRUD，支持条件过滤
+- **Schema 验证** - JSON Schema 验证和版本管理
+- **能力声明** - 动态声明服务支持的功能
+- **审计功能** - 自动记录创建和更新信息
 
-- `application.yml`: 主配置
-- `application-dev.yml`: 开发环境
-- `application-prod.yml`: 生产环境
+## 📦 API 端点
 
-### 数据库迁移
+- `GET /api/capabilities` - 服务能力声明
+- `GET /api/scenes` - 场景列表（支持分页、搜索、排序）
+- `POST /api/scenes` - 创建场景
+- `GET /api/configs` - 配置列表（支持场景筛选）
+- `POST /api/configs` - 创建配置
+- 更多端点请查看 Swagger 文档
 
-使用 Flyway 管理数据库版本：
+## 📚 完整文档
 
-```bash
-# 迁移脚本位置
-src/main/resources/db/migration/
-├── V1__init_schema.sql        # 初始化表结构
-└── V2__add_sample_data.sql    # 示例数据
-```
+详细文档请查看: [Demo Backend 指南](../../docs/demo-backend.md)
 
-## 测试
-
-```bash
-# 运行所有测试
-mvn test
-
-# 运行集成测试
-mvn verify
-```
-
-## 部署
-
-### Docker
-
-```bash
-# 构建镜像
-docker build -t chamberlain-backend .
-
-# 运行容器
-docker run -d -p 8080:8080 \
-  -e MYSQL_URL=jdbc:mysql://mysql:3306/chamberlain \
-  -e MYSQL_USERNAME=chamberlain \
-  -e MYSQL_PASSWORD=password \
-  -e REDIS_HOST=redis \
-  chamberlain-backend
-```
-
-## 协议兼容性测试
-
-运行前端协议测试套件：
+## 🧪 协议兼容性测试
 
 ```bash
 cd ../../packages/protocol
 TEST_ENDPOINT=http://localhost:8080/api pnpm test:compat
 ```
 
-## License
+## 相关链接
 
-MIT
+- [Chamberlain 主项目](../../README.md)
+- [协议规范](../../packages/protocol/docs/api-spec.md)
+- [前端应用](../demo-app/README.md)
 
