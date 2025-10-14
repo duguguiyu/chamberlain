@@ -33,6 +33,9 @@ public class SceneResponse {
     @Schema(description = "当前激活的 Scheme 版本")
     private Integer currentSchemeVersion;
     
+    @Schema(description = "当前激活的 JSON Schema（JSON 对象）")
+    private Object currentScheme;
+    
     @Schema(description = "创建时间")
     private LocalDateTime createdAt;
     

@@ -17,6 +17,7 @@ import com.chamberlain.exception.ValidationException;
 import com.chamberlain.mapper.SceneMapper;
 import com.chamberlain.repository.SceneRepository;
 import com.chamberlain.repository.SchemeVersionRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -40,6 +41,7 @@ public class SceneService {
     private final SchemeVersionRepository schemeVersionRepository;
     private final SceneMapper sceneMapper;
     private final SchemaValidationService schemaValidationService;
+    private final ObjectMapper objectMapper;
     
     /**
      * 根据 ID 获取场景
@@ -47,7 +49,24 @@ public class SceneService {
     public SceneResponse getById(String id) {
         Scene scene = sceneRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("SCENE_NOT_FOUND", "场景不存在: " + id));
-        return sceneMapper.toResponse(scene);
+        SceneResponse response = sceneMapper.toResponse(scene);
+        
+        // 获取当前激活的 scheme (将 JsonNode 转换为 Map，Jackson 自动序列化为 JSON 对象)
+        if (scene.getCurrentSchemeVersion() != null) {
+            schemeVersionRepository.findBySceneIdAndVersion(id, scene.getCurrentSchemeVersion())
+                .ifPresent(schemeVersion -> {
+                    try {
+                        log.debug("Converting JsonNode for scene {}, node type: {}", id, schemeVersion.getSchemaJson().getClass().getName());
+                        java.util.Map<String, Object> schemaMap = objectMapper.convertValue(schemeVersion.getSchemaJson(), java.util.Map.class);
+                        log.debug("Converted to Map, type: {}, size: {}", schemaMap.getClass().getName(), schemaMap.size());
+                        response.setCurrentScheme(schemaMap);
+                    } catch (Exception e) {
+                        log.error("Failed to convert JsonNode to Map for scene {}", id, e);
+                    }
+                });
+        }
+        
+        return response;
     }
     
     /**
@@ -73,8 +92,26 @@ public class SceneService {
             scenePage = sceneRepository.findAll(pageable);
         }
         
+        List<SceneResponse> responses = sceneMapper.toResponseList(scenePage.getContent());
+        
+        // 为每个场景填充当前激活的 scheme (将 JsonNode 转换为 Map)
+        responses.forEach(response -> {
+            if (response.getCurrentSchemeVersion() != null) {
+                schemeVersionRepository.findBySceneIdAndVersion(
+                    response.getId(), 
+                    response.getCurrentSchemeVersion()
+                ).ifPresent(schemeVersion -> {
+                    try {
+                        response.setCurrentScheme(objectMapper.convertValue(schemeVersion.getSchemaJson(), java.util.Map.class));
+                    } catch (Exception e) {
+                        log.warn("Failed to convert JsonNode to Map for scene {}", response.getId(), e);
+                    }
+                });
+            }
+        });
+        
         return PageResult.<SceneResponse>builder()
-            .list(sceneMapper.toResponseList(scenePage.getContent()))
+            .list(responses)
             .total(scenePage.getTotalElements())
             .page(page)
             .pageSize(pageSize)
@@ -107,10 +144,17 @@ public class SceneService {
         schemeVersion.setSchemaJson(request.getSchema());
         schemeVersion.setStatus(SchemeStatus.ACTIVE);
         schemeVersion.setChangeDescription("初始版本");
-        schemeVersionRepository.save(schemeVersion);
+        schemeVersion = schemeVersionRepository.save(schemeVersion);
         
         log.info("Created scene: {} with initial scheme version", scene.getId());
-        return sceneMapper.toResponse(scene);
+        
+        SceneResponse response = sceneMapper.toResponse(scene);
+        try {
+            response.setCurrentScheme(objectMapper.convertValue(schemeVersion.getSchemaJson(), java.util.Map.class));
+        } catch (Exception e) {
+            log.warn("Failed to convert JsonNode to Map for scene {}", scene.getId(), e);
+        }
+        return response;
     }
     
     /**

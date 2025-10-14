@@ -27,9 +27,7 @@ export default defineConfig({
     },
   ],
   npmClient: 'pnpm',
-  mock: {
-    exclude: [],
-  },
+  mock: false, // 禁用 Mock，使用真实后端
   proxy: {
     '/api': {
       target: 'http://localhost:8080',

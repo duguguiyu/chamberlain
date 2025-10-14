@@ -37,10 +37,10 @@ export default function ConfigsPage() {
     const loadScenes = async () => {
       try {
         const response = await client.getSceneList({ page: 1, pageSize: 100 });
-        setScenes(response.data.list || []);
+        setScenes(response.data?.list || []);
         
         // 如果有 URL 参数，设置选中的场景
-        if (sceneIdFromUrl) {
+        if (sceneIdFromUrl && response.data) {
           const scene = response.data.list?.find((s: Scene) => s.id === sceneIdFromUrl);
           setSelectedScene(scene);
         }
@@ -74,12 +74,13 @@ export default function ConfigsPage() {
         sceneId: selectedSceneId,
         conditionList: conditionList || [],
         config: configData,
-        schemeVersion: (selectedScene as any)?.currentSchemeVersion || 1,
+        schemeVersion: selectedScene?.currentSchemeVersion || 1,
       };
 
       await client.createConfig(createData);
       message.success('配置创建成功');
       setCreateModalVisible(false);
+      setCurrentConfig(undefined); // 清空当前配置（用于复制场景）
       setTableKey((prev) => prev + 1);
     } catch (error: any) {
       message.error(error.message || '创建失败');
@@ -148,6 +149,25 @@ export default function ConfigsPage() {
     return config.config || {};
   };
 
+  // 获取场景的 JSON Schema（处理后端返回的字符串或对象）
+  const getCurrentScheme = () => {
+    const scheme = selectedScene?.currentScheme;
+    if (!scheme) return undefined;
+    
+    // 如果是字符串，解析为对象
+    if (typeof scheme === 'string') {
+      try {
+        return JSON.parse(scheme);
+      } catch (error) {
+        console.error('解析 JSON Schema 失败:', error);
+        return undefined;
+      }
+    }
+    
+    // 如果已经是对象，直接返回
+    return scheme;
+  };
+
   return (
     <PageContainer
       title="配置管理"
@@ -209,9 +229,9 @@ export default function ConfigsPage() {
         width={720}
         destroyOnClose
       >
-        {(selectedScene as any)?.currentScheme && (
+        {getCurrentScheme() ? (
           <ConfigForm
-            schema={(selectedScene as any).currentScheme}
+            schema={getCurrentScheme()}
             scene={selectedScene}
             initialValues={currentConfig ? getConfigData(currentConfig) : undefined}
             initialConditions={currentConfig ? currentConfig.conditionList : undefined}
@@ -222,6 +242,10 @@ export default function ConfigsPage() {
             }}
             allowEditConditions={true}
           />
+        ) : (
+          <div style={{ padding: '40px 0', textAlign: 'center', color: '#999' }}>
+            {selectedScene ? '加载配置模板中...' : '请先选择场景'}
+          </div>
         )}
       </Drawer>
 
@@ -236,9 +260,9 @@ export default function ConfigsPage() {
         width={720}
         destroyOnClose
       >
-        {currentConfig && (selectedScene as any)?.currentScheme && (
+        {currentConfig && getCurrentScheme() ? (
           <ConfigForm
-            schema={(selectedScene as any).currentScheme}
+            schema={getCurrentScheme()}
             scene={selectedScene}
             initialValues={getConfigData(currentConfig)}
             initialConditions={currentConfig.conditionList}
@@ -249,6 +273,10 @@ export default function ConfigsPage() {
             }}
             allowEditConditions={false}
           />
+        ) : (
+          <div style={{ padding: '40px 0', textAlign: 'center', color: '#999' }}>
+            加载中...
+          </div>
         )}
       </Drawer>
 
@@ -266,7 +294,7 @@ export default function ConfigsPage() {
         {currentConfig && (
           <ConfigDescriptions
             config={currentConfig}
-            schema={(selectedScene as any)?.currentScheme}
+            schema={getCurrentScheme()}
             showRawConfig
             column={1}
           />

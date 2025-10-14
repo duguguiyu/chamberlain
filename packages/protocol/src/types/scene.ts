@@ -62,8 +62,8 @@ export interface Scene {
   availableConditions?: AvailableCondition[];
   /** 当前 Schema 版本号 */
   currentSchemeVersion?: number;
-  /** 当前 Schema 定义 */
-  currentScheme?: JSONSchema;
+  /** 当前 Schema 定义 (可能是 JSON 字符串或对象，前端会自动解析) */
+  currentScheme?: string | JSONSchema;
   /** 条件冲突策略 */
   conditionConflictStrategy?: 'PRIORITY' | 'MERGE' | 'ERROR';
   /** Scheme 版本列表 (支持多版本) */
