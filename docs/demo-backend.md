@@ -18,8 +18,18 @@ Chamberlain Demo Backend 是基于 Spring Boot 3.2 的后端服务实现，展�
 
 - JDK 17+
 - Maven 3.9+
-- MySQL 8.0+ (可选，开发环境可使用 H2)
-- Redis 7.0+ (可选)
+- MySQL 8.0+ (生产环境必需，开发可选)
+- Redis 7.0+ (可选，用于缓存)
+
+### 环境选择
+
+Chamberlain Backend 支持三种运行环境：
+
+| 环境 | 数据库 | Flyway | 适用场景 |
+|------|--------|--------|----------|
+| **local** | H2 内存 | 禁用 | 快速开发测试 |
+| **dev** | MySQL | 启用 | 团队开发，数据持久化 |
+| **prod** | MySQL | 启用 | 生产部署 |
 
 ### 安装 Java 和 Maven
 
@@ -49,25 +59,42 @@ sdk install maven
 
 ### 启动服务
 
-**使用 H2 内存数据库 (推荐用于开发)**:
+根据你的需求选择合适的环境：
+
+**Local 环境（H2 内存数据库）**:
 
 ```bash
 cd examples/demo-backend
+# 无需创建数据库，直接启动
 mvn spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-**使用 MySQL**:
+**Dev 环境（MySQL 开发环境）**:
 
-1. 创建数据库:
 ```bash
+# 1. 创建数据库
 mysql -u root -p
 CREATE DATABASE chamberlain_dev CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
+exit;
 
-2. 启动服务:
-```bash
+# 2. 启动服务（首次启动会自动执行 Flyway 迁移）
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
+
+**Prod 环境（生产部署）**:
+
+```bash
+# 1. 设置环境变量
+export MYSQL_URL="jdbc:mysql://prod-host:3306/chamberlain"
+export MYSQL_USERNAME="chamberlain"
+export MYSQL_PASSWORD="strong_password"
+
+# 2. 构建并启动
+mvn clean package -DskipTests
+java -jar target/chamberlain-backend-0.1.0.jar --spring.profiles.active=prod
+```
+
+> **💡 提示**: 详细的部署说明请查看 [DEPLOYMENT_GUIDE.md](../examples/demo-backend/DEPLOYMENT_GUIDE.md)
 
 ### 访问服务
 
@@ -132,29 +159,47 @@ src/main/java/com/chamberlain/
 - `DELETE /api/configs/{id}` - 删除配置
 - `POST /api/configs/{id}:copy` - 复制配置
 
-## 数据库
+## 数据库管理
 
-### 使用 H2 (开发)
+### Local 环境（H2）
 
-H2 配置在 `application-local.yml` 中，无需额外安装。数据库在内存中，服务重启后数据会丢失。
+- **特点**: 内存数据库，无需安装
+- **建表方式**: JPA 自动创建（`ddl-auto: create-drop`）
+- **Flyway**: 禁用
+- **数据持久化**: 服务重启后数据丢失
+- **H2 Console**: http://localhost:8080/h2-console
+  - JDBC URL: `jdbc:h2:mem:chamberlain_local`
+  - Username: `sa`
+  - Password: (留空)
 
-### 使用 MySQL (生产)
+### Dev/Prod 环境（MySQL）
 
-1. 创建数据库:
-```sql
-CREATE DATABASE chamberlain CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+- **特点**: 生产级关系数据库
+- **建表方式**: Flyway 迁移脚本（`db/migration/`）
+- **Flyway**: 启用，自动执行迁移
+- **数据持久化**: 永久保存
+- **验证模式**: `ddl-auto: validate`（确保代码与数据库一致）
+
+#### 迁移脚本
+
+```
+src/main/resources/db/migration/
+├── V1__init_schema.sql       # 初始化表结构
+└── V2__add_sample_data.sql   # 示例数据
 ```
 
-2. 配置连接信息 (`application-dev.yml`):
-```yaml
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/chamberlain_dev
-    username: root
-    password: your_password
-```
+#### Flyway 管理
 
-3. Flyway 会自动执行数据库迁移脚本
+```bash
+# 查看迁移状态
+mvn flyway:info
+
+# 手动执行迁移
+mvn flyway:migrate
+
+# 清理数据库（仅开发环境！）
+mvn flyway:clean
+```
 
 ## 测试
 
