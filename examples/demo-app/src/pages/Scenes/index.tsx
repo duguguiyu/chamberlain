@@ -62,15 +62,35 @@ export default function ScenesPage() {
     }
   };
 
+  // 解析 currentScheme（处理后端返回的字符串格式）
+  const parseScene = (scene: Scene): Scene => {
+    if (!scene.currentScheme) return scene;
+    
+    // 如果 currentScheme 是字符串，解析为对象
+    if (typeof scene.currentScheme === 'string') {
+      try {
+        return {
+          ...scene,
+          currentScheme: JSON.parse(scene.currentScheme),
+        };
+      } catch (error) {
+        console.error('解析 currentScheme 失败:', error);
+        return scene;
+      }
+    }
+    
+    return scene;
+  };
+
   // 查看场景详情
   const handleView = (scene: Scene) => {
-    setCurrentScene(scene);
+    setCurrentScene(parseScene(scene));
     setViewModalVisible(true);
   };
 
   // 编辑场景
   const handleEditClick = (scene: Scene) => {
-    setCurrentScene(scene);
+    setCurrentScene(parseScene(scene));
     setEditModalVisible(true);
   };
 
