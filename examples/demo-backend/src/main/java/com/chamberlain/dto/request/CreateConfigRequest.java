@@ -1,6 +1,7 @@
 package com.chamberlain.dto.request;
 
 import com.chamberlain.entity.Config.Condition;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
@@ -27,6 +28,7 @@ public class CreateConfigRequest {
     @Schema(description = "Scheme版本")
     private Integer schemeVersion;
     
+    @JsonAlias({"conditionList", "conditions"})
     @Schema(description = "条件列表，空列表表示默认配置")
     private List<Condition> conditions = new ArrayList<>();
     

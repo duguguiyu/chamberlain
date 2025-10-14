@@ -177,12 +177,23 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({
               rows: 4,
               placeholder: '请输入 JSON 数组，如：["value1", "value2"]',
             }}
-            transform={(value: any) => {
-              try {
-                return JSON.parse(value);
-              } catch {
-                return value;
+            convertValue={(value: any) => {
+              // 显示时：将数组转为字符串
+              if (Array.isArray(value)) {
+                return JSON.stringify(value);
               }
+              return value;
+            }}
+            transform={(value: any) => {
+              // 提交时：将字符串转为数组
+              if (typeof value === 'string') {
+                try {
+                  return JSON.parse(value);
+                } catch {
+                  return value;
+                }
+              }
+              return value;
             }}
           />
         );
@@ -214,12 +225,23 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({
               rows: 6,
               placeholder: '请输入 JSON 对象，如：{"key": "value"}',
             }}
-            transform={(value: any) => {
-              try {
-                return JSON.parse(value);
-              } catch {
-                return value;
+            convertValue={(value: any) => {
+              // 显示时：将对象转为字符串
+              if (typeof value === 'object' && value !== null) {
+                return JSON.stringify(value, null, 2);
               }
+              return value;
+            }}
+            transform={(value: any) => {
+              // 提交时：将字符串转为对象
+              if (typeof value === 'string') {
+                try {
+                  return JSON.parse(value);
+                } catch {
+                  return value;
+                }
+              }
+              return value;
             }}
           />
         );
@@ -397,6 +419,9 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({
       form={form}
       onFinish={async (values) => {
         try {
+          console.log('📋 ConfigForm 提交的原始数据:', values);
+          console.log('📋 ConfigForm 提交的数据类型:', typeof values, Array.isArray(values));
+          console.log('📋 ConfigForm Schema properties:', Object.keys(schema.properties || {}));
           await onSubmit(values);
           message.success('保存成功');
         } catch (error: any) {

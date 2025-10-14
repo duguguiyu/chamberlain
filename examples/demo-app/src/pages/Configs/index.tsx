@@ -68,7 +68,10 @@ export default function ConfigsPage() {
     }
 
     try {
+      console.log('🚀 Configs handleCreate 收到的原始 values:', values);
       const { conditionList, ...configData } = values;
+      console.log('🚀 Configs handleCreate 解构后 conditionList:', conditionList);
+      console.log('🚀 Configs handleCreate 解构后 configData:', configData);
       
       const createData: CreateConfigRequest = {
         sceneId: selectedSceneId,
@@ -76,6 +79,8 @@ export default function ConfigsPage() {
         config: configData,
         schemeVersion: selectedScene?.currentSchemeVersion || 1,
       };
+      
+      console.log('🚀 Configs handleCreate 最终提交的 createData:', createData);
 
       await client.createConfig(createData);
       message.success('配置创建成功');
@@ -151,20 +156,30 @@ export default function ConfigsPage() {
 
   // 获取场景的 JSON Schema（处理后端返回的字符串或对象）
   const getCurrentScheme = () => {
+    console.log('🔍 getCurrentScheme - selectedScene:', selectedScene);
+    console.log('🔍 getCurrentScheme - currentScheme:', selectedScene?.currentScheme);
+    console.log('🔍 getCurrentScheme - currentScheme type:', typeof selectedScene?.currentScheme);
+    
     const scheme = selectedScene?.currentScheme;
-    if (!scheme) return undefined;
+    if (!scheme) {
+      console.warn('⚠️ getCurrentScheme - scheme is undefined or null');
+      return undefined;
+    }
     
     // 如果是字符串，解析为对象
     if (typeof scheme === 'string') {
       try {
-        return JSON.parse(scheme);
+        const parsed = JSON.parse(scheme);
+        console.log('✅ getCurrentScheme - parsed from string:', parsed);
+        return parsed;
       } catch (error) {
-        console.error('解析 JSON Schema 失败:', error);
+        console.error('❌ 解析 JSON Schema 失败:', error);
         return undefined;
       }
     }
     
     // 如果已经是对象，直接返回
+    console.log('✅ getCurrentScheme - returning object:', scheme);
     return scheme;
   };
 

@@ -17,6 +17,7 @@ import com.chamberlain.exception.ValidationException;
 import com.chamberlain.mapper.SceneMapper;
 import com.chamberlain.repository.SceneRepository;
 import com.chamberlain.repository.SchemeVersionRepository;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +58,15 @@ public class SceneService {
                 .ifPresent(schemeVersion -> {
                     try {
                         log.debug("Converting JsonNode for scene {}, node type: {}", id, schemeVersion.getSchemaJson().getClass().getName());
-                        java.util.Map<String, Object> schemaMap = objectMapper.convertValue(schemeVersion.getSchemaJson(), java.util.Map.class);
+                        JsonNode schemaNode = schemeVersion.getSchemaJson();
+                        
+                        // 如果是 TextNode (字符串)，需要重新解析
+                        if (schemaNode.isTextual()) {
+                            log.debug("JsonNode is TextNode, parsing string");
+                            schemaNode = objectMapper.readTree(schemaNode.asText());
+                        }
+                        
+                        java.util.Map<String, Object> schemaMap = objectMapper.convertValue(schemaNode, java.util.Map.class);
                         log.debug("Converted to Map, type: {}, size: {}", schemaMap.getClass().getName(), schemaMap.size());
                         response.setCurrentScheme(schemaMap);
                     } catch (Exception e) {
@@ -96,15 +105,30 @@ public class SceneService {
         
         // 为每个场景填充当前激活的 scheme (将 JsonNode 转换为 Map)
         responses.forEach(response -> {
+            log.debug("Processing scene: {}, currentSchemeVersion: {}", response.getId(), response.getCurrentSchemeVersion());
             if (response.getCurrentSchemeVersion() != null) {
-                schemeVersionRepository.findBySceneIdAndVersion(
+                var schemeOpt = schemeVersionRepository.findBySceneIdAndVersion(
                     response.getId(), 
                     response.getCurrentSchemeVersion()
-                ).ifPresent(schemeVersion -> {
+                );
+                log.debug("Found scheme for scene {}: {}", response.getId(), schemeOpt.isPresent());
+                schemeOpt.ifPresent(schemeVersion -> {
                     try {
-                        response.setCurrentScheme(objectMapper.convertValue(schemeVersion.getSchemaJson(), java.util.Map.class));
+                        log.debug("Converting JsonNode for scene {}: {}", response.getId(), schemeVersion.getSchemaJson());
+                        JsonNode schemaNode = schemeVersion.getSchemaJson();
+                        
+                        // 如果是 TextNode (字符串)，需要重新解析
+                        if (schemaNode.isTextual()) {
+                            log.debug("JsonNode is TextNode, parsing string: {}", schemaNode.asText());
+                            schemaNode = objectMapper.readTree(schemaNode.asText());
+                        }
+                        
+                        Object schemaMap = objectMapper.convertValue(schemaNode, java.util.Map.class);
+                        log.debug("Converted to Map for scene {}: {}", response.getId(), schemaMap);
+                        response.setCurrentScheme(schemaMap);
+                        log.debug("Set currentScheme for scene {}, response.currentScheme: {}", response.getId(), response.getCurrentScheme());
                     } catch (Exception e) {
-                        log.warn("Failed to convert JsonNode to Map for scene {}", response.getId(), e);
+                        log.error("Failed to convert JsonNode to Map for scene {}", response.getId(), e);
                     }
                 });
             }
@@ -150,7 +174,15 @@ public class SceneService {
         
         SceneResponse response = sceneMapper.toResponse(scene);
         try {
-            response.setCurrentScheme(objectMapper.convertValue(schemeVersion.getSchemaJson(), java.util.Map.class));
+            JsonNode schemaNode = schemeVersion.getSchemaJson();
+            
+            // 如果是 TextNode (字符串)，需要重新解析
+            if (schemaNode.isTextual()) {
+                log.debug("JsonNode is TextNode, parsing string");
+                schemaNode = objectMapper.readTree(schemaNode.asText());
+            }
+            
+            response.setCurrentScheme(objectMapper.convertValue(schemaNode, java.util.Map.class));
         } catch (Exception e) {
             log.warn("Failed to convert JsonNode to Map for scene {}", scene.getId(), e);
         }
