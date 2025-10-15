@@ -45,6 +45,8 @@ Demo 应用包含：
 npm install @chamberlain/react-components antd @ant-design/pro-components
 ```
 
+#### 基本使用
+
 ```tsx
 import { ChamberlainProvider, SceneTable } from '@chamberlain/react-components';
 
@@ -56,6 +58,47 @@ function App() {
   );
 }
 ```
+
+#### 配置鉴权（推荐）
+
+如果你的后端 API 需要鉴权，可以使用请求拦截器：
+
+```tsx
+import { ChamberlainProvider, SceneTable, type RequestInterceptor } from '@chamberlain/react-components';
+
+// 定义请求拦截器
+const requestInterceptor: RequestInterceptor = async (config) => {
+  // 获取 token（可以从 localStorage、cookie 或其他地方）
+  const token = localStorage.getItem('authToken');
+  
+  // 注入到请求头
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  
+  return config;
+};
+
+function App() {
+  return (
+    <ChamberlainProvider 
+      endpoint="http://localhost:8080/api"
+      requestInterceptor={requestInterceptor}
+    >
+      <SceneTable />
+    </ChamberlainProvider>
+  );
+}
+```
+
+**支持的鉴权方式：**
+- Bearer Token
+- API Key
+- OAuth 2.0
+- 自定义请求头
+- 多租户场景
+
+详细的鉴权集成示例请参考：[鉴权集成文档](../packages/react-components/docs/authentication-example.md)
 
 ## 📚 下一步
 

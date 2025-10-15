@@ -11,21 +11,103 @@
 | 属性 | 类型 | 必填 | 默认值 | 说明 |
 |-----|------|------|--------|------|
 | endpoint | string | 是 | - | API 端点地址 |
-| headers | object | 否 | - | 自定义请求头（如认证 token） |
+| headers | object | 否 | - | 静态请求头（固定不变的请求头） |
 | timeout | number | 否 | 30000 | 请求超时时间（毫秒） |
+| requestInterceptor | RequestInterceptor | 否 | - | 请求拦截器，用于动态修改请求配置（如注入鉴权信息） |
 | capabilities | Capabilities | 否 | - | 自定义 capabilities（不传则自动获取） |
 | children | ReactNode | 是 | - | 子组件 |
 
-### 示例
+### 基本示例
 
 ```tsx
 <ChamberlainProvider 
   endpoint="http://localhost:8080/api"
-  headers={{ Authorization: 'Bearer token' }}
+  headers={{ 'X-Custom-Header': 'value' }}
 >
   <App />
 </ChamberlainProvider>
 ```
+
+### 鉴权配置
+
+使用 `requestInterceptor` 可以在每次请求前动态修改请求头，常用于注入鉴权信息：
+
+```tsx
+import { ChamberlainProvider, type RequestInterceptor } from '@chamberlain/react-components';
+
+const requestInterceptor: RequestInterceptor = async (config) => {
+  // 从 localStorage 或其他地方获取 token
+  const token = localStorage.getItem('authToken');
+  
+  // 注入到请求头
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  
+  // 也可以添加其他自定义头
+  config.headers['X-Request-ID'] = generateRequestId();
+  
+  return config;
+};
+
+<ChamberlainProvider 
+  endpoint="http://localhost:8080/api"
+  requestInterceptor={requestInterceptor}
+>
+  <App />
+</ChamberlainProvider>
+```
+
+**RequestInterceptor 类型：**
+
+```typescript
+type RequestInterceptor = (
+  config: InternalAxiosRequestConfig
+) => InternalAxiosRequestConfig | Promise<InternalAxiosRequestConfig>;
+```
+
+**常见鉴权场景：**
+
+1. **Bearer Token 鉴权**
+```tsx
+const requestInterceptor: RequestInterceptor = (config) => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+};
+```
+
+2. **API Key 鉴权**
+```tsx
+const requestInterceptor: RequestInterceptor = (config) => {
+  config.headers['X-API-Key'] = process.env.REACT_APP_API_KEY;
+  return config;
+};
+```
+
+3. **动态 Token 刷新**
+```tsx
+const requestInterceptor: RequestInterceptor = async (config) => {
+  // 检查 token 是否过期
+  const token = await getValidToken(); // 自动刷新过期 token
+  config.headers.Authorization = `Bearer ${token}`;
+  return config;
+};
+```
+
+4. **多租户场景**
+```tsx
+const requestInterceptor: RequestInterceptor = (config) => {
+  config.headers['X-Tenant-ID'] = getCurrentTenantId();
+  config.headers['X-User-ID'] = getCurrentUserId();
+  config.headers.Authorization = `Bearer ${getToken()}`;
+  return config;
+};
+```
+
+更多鉴权集成示例，请参考：[React Components 鉴权文档](../packages/react-components/docs/authentication-example.md)
 
 ---
 
@@ -270,12 +352,36 @@ const {
 ### 创建实例
 
 ```tsx
-import { ChamberlainClient } from '@chamberlain/react-components';
+import { ChamberlainClient, type RequestInterceptor } from '@chamberlain/react-components';
 
 const client = new ChamberlainClient({
   endpoint: 'http://localhost:8080/api',
-  headers: { Authorization: 'Bearer token' },
+  headers: { 'X-Custom-Header': 'value' },
   timeout: 30000,
+});
+```
+
+### 配置选项
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+|-----|------|------|--------|------|
+| endpoint | string | 是 | - | API 端点地址 |
+| headers | object | 否 | - | 静态请求头 |
+| timeout | number | 否 | 30000 | 请求超时时间（毫秒） |
+| requestInterceptor | RequestInterceptor | 否 | - | 请求拦截器 |
+
+### 使用请求拦截器
+
+```tsx
+const requestInterceptor: RequestInterceptor = async (config) => {
+  const token = await getAuthToken();
+  config.headers.Authorization = `Bearer ${token}`;
+  return config;
+};
+
+const client = new ChamberlainClient({
+  endpoint: 'http://localhost:8080/api',
+  requestInterceptor,
 });
 ```
 

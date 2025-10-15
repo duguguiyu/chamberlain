@@ -28,12 +28,13 @@ export const ChamberlainProvider: React.FC<ChamberlainProviderProps> = ({
   endpoint,
   headers,
   timeout,
+  requestInterceptor,
   capabilities: customCapabilities,
   children,
 }) => {
   const client = useMemo(
-    () => new ChamberlainClient({ endpoint, headers, timeout }),
-    [endpoint, headers, timeout]
+    () => new ChamberlainClient({ endpoint, headers, timeout, requestInterceptor }),
+    [endpoint, headers, timeout, requestInterceptor]
   );
 
   const [capabilities, setCapabilities] = useState<Capabilities | null>(customCapabilities || null);

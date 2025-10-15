@@ -13,6 +13,6 @@ export * from './hooks';
 export * from './components';
 
 // Services
-export { ChamberlainClient, type ChamberlainClientConfig } from './services/ChamberlainClient';
+export { ChamberlainClient, type ChamberlainClientConfig, type RequestInterceptor } from './services/ChamberlainClient';
 
 

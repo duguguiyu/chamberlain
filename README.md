@@ -60,6 +60,7 @@ Chamberlain 提供了端到端的完整解决方案，既可以接入不同的�
   - 自动读取服务端 Capabilities，动态调整 UI
   - 支持搜索、排序、筛选（基于服务端能力）
   - 完整的表单验证和错误提示
+  - 灵活的鉴权集成（支持 Bearer Token、API Key、OAuth 等）
 
 ### 后端协议
 
@@ -100,6 +101,8 @@ pnpm dev
 
 ### 使用前端组件
 
+#### 基本用法
+
 ```tsx
 import { ChamberlainProvider, SceneTable } from '@chamberlain/react-components';
 
@@ -114,6 +117,36 @@ function App() {
   );
 }
 ```
+
+#### 集成自定义鉴权
+
+```tsx
+import { ChamberlainProvider, type RequestInterceptor } from '@chamberlain/react-components';
+
+// 定义请求拦截器，用于注入鉴权信息
+const requestInterceptor: RequestInterceptor = async (config) => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+};
+
+function App() {
+  return (
+    <ChamberlainProvider 
+      endpoint="http://localhost:8080/api"
+      requestInterceptor={requestInterceptor}
+    >
+      <SceneTable />
+    </ChamberlainProvider>
+  );
+}
+```
+
+更多鉴权集成示例，请参考：
+- [组件 API 文档 - 鉴权配置](docs/component-api.md#鉴权配置)
+- [React Components README](packages/react-components/README.md#自定义鉴权)
 
 ---
 

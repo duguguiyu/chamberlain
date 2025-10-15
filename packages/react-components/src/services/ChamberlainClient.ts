@@ -3,7 +3,7 @@
  */
 
 import axios from 'axios';
-import type { AxiosInstance } from 'axios';
+import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import type {
   ApiResponse,
   Capabilities,
@@ -25,13 +25,36 @@ import type {
   CopyConfigRequest,
 } from '@chamberlain/protocol';
 
+/**
+ * 请求拦截器函数类型
+ * @param config - Axios 请求配置
+ * @returns 修改后的请求配置或 Promise
+ */
+export type RequestInterceptor = (
+  config: InternalAxiosRequestConfig
+) => InternalAxiosRequestConfig | Promise<InternalAxiosRequestConfig>;
+
 export interface ChamberlainClientConfig {
   /** API 端点 */
   endpoint: string;
-  /** 自定义请求头 */
+  /** 自定义请求头（静态） */
   headers?: Record<string, string>;
   /** 请求超时时间 (ms) */
   timeout?: number;
+  /**
+   * 请求拦截器
+   * 在发送请求前调用，允许修改请求配置（包括请求头）
+   * 常用于动态注入鉴权信息
+   * @example
+   * ```typescript
+   * requestInterceptor: async (config) => {
+   *   const token = await getAuthToken();
+   *   config.headers.Authorization = `Bearer ${token}`;
+   *   return config;
+   * }
+   * ```
+   */
+  requestInterceptor?: RequestInterceptor;
 }
 
 export class ChamberlainClient {
@@ -46,6 +69,14 @@ export class ChamberlainClient {
         ...config.headers,
       },
     });
+
+    // 请求拦截器：允许用户自定义请求配置（如动态添加鉴权信息）
+    if (config.requestInterceptor) {
+      this.axios.interceptors.request.use(
+        config.requestInterceptor,
+        (error) => Promise.reject(error)
+      );
+    }
 
     // 响应拦截器：统一处理错误
     this.axios.interceptors.response.use(
