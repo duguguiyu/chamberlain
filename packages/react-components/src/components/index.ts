@@ -4,7 +4,7 @@
 
 // 场景管理组件
 export { SceneTable, type SceneTableProps } from './SceneTable';
-export { SceneForm, type SceneFormProps } from './SceneForm';
+export { SceneForm, SceneCreateForm, type SceneFormProps } from './SceneForm';
 export { SceneDescriptions, type SceneDescriptionsProps } from './SceneDescriptions';
 
 // 配置管理组件

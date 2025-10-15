@@ -18,8 +18,9 @@ echo "📦 准备启动开发服务器..."
 
 # 使用环境变量启动
 export DYLD_FALLBACK_LIBRARY_PATH="/tmp/icu4c-compat:/opt/homebrew/Cellar/icu4c@77/77.1/lib:$DYLD_FALLBACK_LIBRARY_PATH"
+export PORT=8000
 
-echo "🚀 启动中..."
+echo "🚀 启动中（端口 8000）..."
 pnpm dev
 
 

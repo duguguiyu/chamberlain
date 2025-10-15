@@ -46,8 +46,51 @@ function App() {
 ### Scene 组件
 
 - `SceneTable` - Scene 列表表格
-- `SceneForm` - Scene 创建/编辑表单
+- `SceneForm` - Scene 创建/编辑表单（统一表单，支持创建和编辑）
 - `SceneDescriptions` - Scene 详情展示
+
+#### SceneForm 编辑模式说明
+
+`SceneForm` 支持创建和编辑两种模式：
+
+**创建模式**（未传 `scene` 参数）：
+- 所有字段都可以编辑
+- 需要提供 `onSubmit` 回调
+
+**编辑模式**（传入 `scene` 参数）：
+- **场景 ID**: 不可修改（创建后固定）
+- **场景名称 & 描述**: 可以修改，通过 `onUpdateMetadata` 回调
+- **可用条件**: 已有的条件不能删除或修改，只能添加新条件，通过 `onAddCondition` 回调
+- **JSON Schema**: 需要先验证兼容性，支持版本升级，通过 `onValidateSchema` 和 `onUpdateSchema` 回调
+
+示例：
+
+```tsx
+import { SceneForm } from '@chamberlain/react-components';
+import { useScenes } from '@chamberlain/react-components';
+
+function EditScenePage({ scene }) {
+  const { updateScene, addCondition, validateScheme, updateScheme } = useScenes();
+
+  return (
+    <SceneForm
+      scene={scene}
+      onUpdateMetadata={async (id, values) => {
+        await updateScene(id, values);
+      }}
+      onAddCondition={async (id, values) => {
+        await addCondition(id, values);
+      }}
+      onValidateSchema={async (id, schema) => {
+        return await validateScheme(id, { scheme: schema });
+      }}
+      onUpdateSchema={async (id, values) => {
+        return await updateScheme(id, values);
+      }}
+    />
+  );
+}
+```
 
 ### Config 组件
 
