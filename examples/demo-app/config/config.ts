@@ -1,5 +1,6 @@
 import { defineConfig } from '@umijs/max';
 
+// 基础配置（所有环境共享）
 export default defineConfig({
   antd: {},
   access: {},
@@ -27,13 +28,6 @@ export default defineConfig({
     },
   ],
   npmClient: 'pnpm',
-  mock: false, // 禁用 Mock，使用真实后端
-  proxy: {
-    '/api': {
-      target: 'http://localhost:8080',
-      changeOrigin: true,
-    },
-  },
 });
 
 

@@ -94,10 +94,106 @@ cd chamberlain
 
 # 安装依赖
 pnpm install
-
-# 启动开发环境
-pnpm dev
 ```
+
+### 启动开发环境
+
+Chamberlain 提供了统一的启动脚本，支持多种环境：
+
+```bash
+./start.sh [环境]
+```
+
+#### 🌍 环境选择
+
+<table>
+<tr>
+<td width="20%" align="center">
+
+**🎨 Mock**
+
+仅前端，无需后端
+
+```bash
+./start.sh mock
+```
+
+[了解更多 →](docs/environments.md#1-mock-环境)
+
+</td>
+<td width="20%" align="center">
+
+**🔧 Local**
+
+前端 + 本地后端
+
+```bash
+./start.sh local
+```
+
+[了解更多 →](docs/environments.md#2-local-环境)
+
+</td>
+<td width="20%" align="center">
+
+**🧪 Test**
+
+连接测试环境
+
+```bash
+./start.sh test
+```
+
+[了解更多 →](docs/environments.md#3-test-环境)
+
+</td>
+<td width="20%" align="center">
+
+**🚀 Staging**
+
+预发布环境
+
+```bash
+./start.sh staging
+```
+
+[了解更多 →](docs/environments.md#4-staging-环境)
+
+</td>
+<td width="20%" align="center">
+
+**📦 Prod**
+
+生产环境
+
+```bash
+./start.sh prod
+```
+
+[了解更多 →](docs/environments.md#5-prod-环境)
+
+</td>
+</tr>
+</table>
+
+#### 💡 推荐使用方式
+
+- 🎨 **前端开发**：使用 `./start.sh mock` - 无需后端，快速预览 UI
+- 🔧 **全栈开发**：使用 `./start.sh local` - 自动启动前后端，完整体验
+- 🚀 **部署前测试**：使用 `./start.sh test` - 连接真实测试环境验证
+
+#### 🌐 访问地址
+
+启动后可以访问：
+
+| 服务 | 地址 | 说明 |
+|------|------|------|
+| 前端应用 | http://localhost:8000 | 所有环境 |
+| 后端 API | http://localhost:8080 | local 模式 |
+| API 文档 | http://localhost:8080/swagger-ui.html | local 模式 |
+| 健康检查 | http://localhost:8080/actuator/health | local 模式 |
+
+> 📚 **详细配置文档**：查看 [环境配置说明](docs/environments.md) 了解各环境的配置、前置条件和常见问题
 
 ### 使用前端组件
 
@@ -167,12 +263,20 @@ chamberlain/
 
 ## 📚 文档
 
+**入门指南**
 - [快速开始](docs/getting-started.md) - 快速上手指南
+- [环境配置](docs/environments.md) - 多环境配置和启动说明 ⭐
+
+**开发文档**
 - [组件 API 文档](docs/component-api.md) - React 组件使用说明
 - [协议规范](packages/protocol/docs/api-spec.md) - API 协议定义
 - [后端设计](docs/backend-java-design.md) - Java 后端架构设计
+
+**示例应用**
 - [Demo App](docs/demo-app.md) - 前端示例应用指南
 - [Demo Backend](docs/demo-backend.md) - 后端示例服务指南
+
+**部署与开发**
 - [部署指南](docs/deployment.md) - 生产环境部署
 - [开发指南](docs/development.md) - 参与项目开发
 
