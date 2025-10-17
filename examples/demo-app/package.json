@@ -4,7 +4,9 @@
   "private": true,
   "description": "Chamberlain Demo Application based on Ant Design Pro",
   "scripts": {
-    "dev": "max dev",
+    "dev": "PORT=8000 max dev",
+    "dev:mock": "PORT=8000 MOCK=true max dev",
+    "dev:local": "PORT=8000 max dev",
     "build": "max build",
     "start": "npm run dev",
     "preview": "max preview",
@@ -13,10 +15,10 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@chamberlain/protocol": "workspace:*",
-    "@chamberlain/react-components": "workspace:*",
     "@ant-design/icons": "^5.2.6",
     "@ant-design/pro-components": "^2.6.43",
+    "@chamberlain/protocol": "workspace:*",
+    "@chamberlain/react-components": "workspace:*",
     "@umijs/max": "^4.0.89",
     "antd": "^5.12.0",
     "react": "^18.2.0",
@@ -26,7 +28,12 @@
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
     "mockjs": "^1.1.0",
+    "msw": "^2.11.5",
     "typescript": "^5.3.0"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }
-

@@ -6,7 +6,9 @@ export default defineConfig({
   access: {},
   model: {},
   initialState: {},
-  request: {},
+  // ⚠️ 禁用 request 插件，避免自动创建 Proxy
+  // Mock 模式使用 MSW，Dev 模式使用环境配置中的 proxy
+  request: false,
   layout: {
     title: 'Chamberlain',
     locale: false,
@@ -29,5 +31,3 @@ export default defineConfig({
   ],
   npmClient: 'pnpm',
 });
-
-

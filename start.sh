@@ -89,10 +89,10 @@ case "$ENV" in
         echo ""
         
         cd examples/demo-app
-        print_info "执行命令: UMI_ENV=mock PORT=8000 pnpm dev"
+        print_info "执行命令: pnpm dev:mock"
         echo ""
         
-        UMI_ENV=mock PORT=8000 pnpm dev
+        pnpm dev:mock
         ;;
     
     local)
@@ -133,7 +133,7 @@ case "$ENV" in
         # 在新终端启动前端
         print_info "在新终端窗口启动前端..."
         osascript -e 'tell application "Terminal"
-            do script "cd \"'$(pwd)'/examples/demo-app\" && echo \"🎨 启动前端服务 (local 环境)...\" && echo \"\" && UMI_ENV=local PORT=8000 pnpm dev"
+            do script "cd \"'$(pwd)'/examples/demo-app\" && echo \"🎨 启动前端服务 (local 环境)...\" && echo \"\" && pnpm dev:local"
             activate
         end tell' 2>/dev/null
         
